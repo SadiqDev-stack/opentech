@@ -14,7 +14,6 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "../context/AuthContext";
 import { CartProvider } from "../context/CartContext";
 
-
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -89,7 +88,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "OpenTech — Innovate. Build. Impact." },
       {
         property: "og:description",
-        content: "Custom technology solutions, an electronics store and practical tech courses in one place.",
+        content:
+          "Custom technology solutions, an electronics store and practical tech courses in one place.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -139,4 +139,3 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
-

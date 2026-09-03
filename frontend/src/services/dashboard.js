@@ -32,7 +32,10 @@ export async function getUserDashboard() {
 
 export async function getAdminDashboard() {
   if (USE_MOCK_DATA) {
-    return mockResponse({ stats: adminStats, logs, users }, "Admin dashboard retrieved successfully");
+    return mockResponse(
+      { stats: adminStats, logs, users },
+      "Admin dashboard retrieved successfully",
+    );
   }
   return api.get("/admin/dashboard");
 }

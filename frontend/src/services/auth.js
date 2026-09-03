@@ -4,7 +4,8 @@ import { users, currentUser } from "@/central/util/mockdata";
 export async function login({ email, password }) {
   if (USE_MOCK_DATA) {
     if (!password) return mockError(422, "Password is required");
-    const user = users.find((u) => u.email.toLowerCase() === String(email).toLowerCase()) || currentUser;
+    const user =
+      users.find((u) => u.email.toLowerCase() === String(email).toLowerCase()) || currentUser;
     if (!user.active) return mockError(403, "Account is not active");
     setToken(`mock-token-${user.id}`);
     return mockResponse({ user }, "Login successful");
