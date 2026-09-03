@@ -1,7 +1,13 @@
 import { api, USE_MOCK_DATA, mockResponse, mockError } from "./api";
 import { products, productReviews, categories } from "@/central/util/mockdata";
 
-export async function getProducts({ search = "", category = "", sort = "newest", page = 1, limit = 12 } = {}) {
+export async function getProducts({
+  search = "",
+  category = "",
+  sort = "newest",
+  page = 1,
+  limit = 12,
+} = {}) {
   if (USE_MOCK_DATA) {
     let list = [...products];
     if (search) {
@@ -38,7 +44,9 @@ export async function getProduct(id) {
       {
         product,
         reviews: productReviews.filter((r) => r.productId === product.id),
-        related: products.filter((p) => p.categorySlug === product.categorySlug && p.id !== product.id).slice(0, 4),
+        related: products
+          .filter((p) => p.categorySlug === product.categorySlug && p.id !== product.id)
+          .slice(0, 4),
       },
       "Product retrieved successfully",
     );
@@ -48,7 +56,10 @@ export async function getProduct(id) {
 
 export async function getRelatedProducts(limit = 5) {
   if (USE_MOCK_DATA) {
-    return mockResponse({ products: products.filter((p) => p.featured).slice(0, limit) }, "Products retrieved");
+    return mockResponse(
+      { products: products.filter((p) => p.featured).slice(0, limit) },
+      "Products retrieved",
+    );
   }
   return api.get("/products", { featured: true, limit });
 }

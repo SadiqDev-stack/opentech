@@ -28,7 +28,8 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "OpenTech — Build. Learn. Innovate." },
       {
         property: "og:description",
-        content: "One company, three connected areas: technology solutions, an electronics store and a tech academy.",
+        content:
+          "One company, three connected areas: technology solutions, an electronics store and a tech academy.",
       },
     ],
   }),
@@ -65,20 +66,28 @@ const pillars = [
   },
 ];
 
-const heroPoints = ["Hands-on learning", "Expert engineers", "Verified certificates", "Real-world projects"];
+const heroPoints = [
+  "Hands-on learning",
+  "Expert engineers",
+  "Verified certificates",
+  "Real-world projects",
+];
 
 const whyPoints = [
   {
     title: "Engineers, not resellers",
-    detail: "The same team that builds production hardware and software teaches the courses and advises on parts.",
+    detail:
+      "The same team that builds production hardware and software teaches the courses and advises on parts.",
   },
   {
     title: "One connected ecosystem",
-    detail: "Learn a skill in the Academy, buy the components in the Store, and build with our team when you scale.",
+    detail:
+      "Learn a skill in the Academy, buy the components in the Store, and build with our team when you scale.",
   },
   {
     title: "Genuine components",
-    detail: "Boards, sensors and modules sourced from trusted suppliers with technical buying advice included.",
+    detail:
+      "Boards, sensors and modules sourced from trusted suppliers with technical buying advice included.",
   },
   {
     title: "Support after delivery",
@@ -101,7 +110,9 @@ function HomePage() {
               <br />
               Build the <span className="text-primary">Future.</span>
             </h1>
-            <p className="mt-5 max-w-xl text-sm text-white/70 sm:text-base">{company.description}</p>
+            <p className="mt-5 max-w-xl text-sm text-white/70 sm:text-base">
+              {company.description}
+            </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <ButtonLink to="/academy" size="lg">
                 Explore Academy →
@@ -112,7 +123,10 @@ function HomePage() {
             </div>
             <ul className="mt-10 grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4">
               {heroPoints.map((point) => (
-                <li key={point} className="flex items-center gap-2 text-xs font-medium text-white/70">
+                <li
+                  key={point}
+                  className="flex items-center gap-2 text-xs font-medium text-white/70"
+                >
                   <span className="h-1.5 w-1.5 rounded-full bg-primary" aria-hidden="true" />
                   {point}
                 </li>
@@ -122,9 +136,12 @@ function HomePage() {
 
           <div className="rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur">
             <p className="text-xs font-bold tracking-[0.18em] text-primary uppercase">Talk to us</p>
-            <h2 className="mt-2 text-lg font-bold text-white">Have an idea or a problem to solve?</h2>
+            <h2 className="mt-2 text-lg font-bold text-white">
+              Have an idea or a problem to solve?
+            </h2>
             <p className="mt-2 text-sm text-white/65">
-              Tell us what you need and our engineers will come back with a practical plan and a quote.
+              Tell us what you need and our engineers will come back with a practical plan and a
+              quote.
             </p>
             <div className="mt-5 space-y-2.5 text-sm text-white/75">
               <p>{company.phone}</p>
@@ -149,11 +166,17 @@ function HomePage() {
                 pillar.dark ? "border-white/10 bg-navy text-white" : "border-border bg-card"
               }`}
             >
-              <p className="text-xs font-bold tracking-[0.16em] text-primary uppercase">{pillar.label}</p>
-              <h3 className={`mt-3 text-lg font-bold ${pillar.dark ? "text-white" : "text-foreground"}`}>
+              <p className="text-xs font-bold tracking-[0.16em] text-primary uppercase">
+                {pillar.label}
+              </p>
+              <h3
+                className={`mt-3 text-lg font-bold ${pillar.dark ? "text-white" : "text-foreground"}`}
+              >
                 {pillar.title}
               </h3>
-              <p className={`mt-2 text-sm ${pillar.dark ? "text-white/65" : "text-muted-foreground"}`}>
+              <p
+                className={`mt-2 text-sm ${pillar.dark ? "text-white/65" : "text-muted-foreground"}`}
+              >
                 {pillar.description}
               </p>
               <ButtonLink
@@ -289,13 +312,15 @@ function HomePage() {
         <div className="gradient-dark-gold overflow-hidden rounded-2xl px-6 py-12 sm:px-12">
           <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
             <div>
-              <p className="text-xs font-bold tracking-[0.18em] text-primary uppercase">Innovation</p>
+              <p className="text-xs font-bold tracking-[0.18em] text-primary uppercase">
+                Innovation
+              </p>
               <h2 className="mt-3 text-2xl font-extrabold text-white sm:text-3xl">
                 Have an idea or need a <span className="text-primary">custom</span> solution?
               </h2>
               <p className="mt-3 max-w-xl text-sm text-white/70">
-                Share your project or problem. We study the requirement, propose an approach, then design, build and
-                support the solution with you.
+                Share your project or problem. We study the requirement, propose an approach, then
+                design, build and support the solution with you.
               </p>
             </div>
             <div className="flex flex-wrap gap-3 lg:justify-end">
@@ -327,7 +352,9 @@ function HomePage() {
                       {initials(item.name)}
                     </span>
                     <span>
-                      <span className="block text-sm font-semibold text-foreground">{item.name}</span>
+                      <span className="block text-sm font-semibold text-foreground">
+                        {item.name}
+                      </span>
                       <span className="block text-xs text-muted-foreground">{item.role}</span>
                     </span>
                   </div>

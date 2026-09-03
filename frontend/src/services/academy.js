@@ -37,7 +37,9 @@ export async function getCourse(id) {
         course,
         lessons: lessons.filter((l) => l.courseId === course.id).sort((a, b) => a.order - b.order),
         ratings: courseRatings.filter((r) => r.courseId === course.id),
-        related: courses.filter((c) => c.categorySlug === course.categorySlug && c.id !== course.id).slice(0, 3),
+        related: courses
+          .filter((c) => c.categorySlug === course.categorySlug && c.id !== course.id)
+          .slice(0, 3),
       },
       "Course retrieved successfully",
     );

@@ -129,7 +129,13 @@ export const services = [
 ];
 
 export const categories = [
-  { id: 1, name: "Development Boards", slug: "development-boards", type: "product", productCount: 14 },
+  {
+    id: 1,
+    name: "Development Boards",
+    slug: "development-boards",
+    type: "product",
+    productCount: 14,
+  },
   { id: 2, name: "Sensors", slug: "sensors", type: "product", productCount: 22 },
   { id: 3, name: "Robotics", slug: "robotics", type: "product", productCount: 9 },
   { id: 4, name: "Components", slug: "components", type: "product", productCount: 31 },
@@ -210,7 +216,8 @@ export const products = [
     id: 4,
     name: "Jumper Wires Pack (120 pcs)",
     slug: "jumper-wires-pack",
-    description: "Male-to-male, male-to-female and female-to-female jumper wires for breadboarding.",
+    description:
+      "Male-to-male, male-to-female and female-to-female jumper wires for breadboarding.",
     price: 3500,
     oldPrice: null,
     category: "Components",
@@ -246,7 +253,8 @@ export const products = [
     id: 6,
     name: "DHT22 Temperature & Humidity Sensor",
     slug: "dht22-sensor",
-    description: "Accurate digital temperature and humidity sensor for weather and agriculture projects.",
+    description:
+      "Accurate digital temperature and humidity sensor for weather and agriculture projects.",
     price: 6800,
     oldPrice: 7500,
     category: "Sensors",
@@ -293,7 +301,11 @@ export const products = [
     totalPurchases: 48,
     images: [],
     featured: true,
-    specifications: { RAM: "4GB LPDDR4", CPU: "Quad-core Cortex-A72", Ports: "2x micro HDMI, USB 3.0" },
+    specifications: {
+      RAM: "4GB LPDDR4",
+      CPU: "Quad-core Cortex-A72",
+      Ports: "2x micro HDMI, USB 3.0",
+    },
     createdAt: "2026-06-01T10:00:00.000Z",
   },
   {
@@ -336,7 +348,8 @@ export const products = [
     id: 11,
     name: "Servo Motor SG90 (Pack of 4)",
     slug: "servo-motor-sg90-pack",
-    description: "Micro servo motors for robotic arms, pan-tilt rigs and small automation projects.",
+    description:
+      "Micro servo motors for robotic arms, pan-tilt rigs and small automation projects.",
     price: 9800,
     oldPrice: null,
     category: "Robotics",
@@ -471,7 +484,11 @@ export const courses = [
     instructor: { name: "Aminu Musa", title: "Head of Software, OpenTech" },
     image: "",
     featured: true,
-    outcomes: ["Build three complete robots", "Use motor drivers safely", "Control robots over Bluetooth"],
+    outcomes: [
+      "Build three complete robots",
+      "Use motor drivers safely",
+      "Control robots over Bluetooth",
+    ],
     requirements: ["Basic Arduino knowledge"],
     createdAt: "2026-02-20T10:00:00.000Z",
   },
@@ -494,7 +511,11 @@ export const courses = [
     instructor: { name: "Hauwa Lawan", title: "Head of Academy" },
     image: "",
     featured: true,
-    outcomes: ["Publish data over MQTT/HTTP", "Build a monitoring dashboard", "Secure your devices"],
+    outcomes: [
+      "Publish data over MQTT/HTTP",
+      "Build a monitoring dashboard",
+      "Secure your devices",
+    ],
     requirements: ["Basic programming knowledge"],
     createdAt: "2026-03-15T10:00:00.000Z",
   },
@@ -517,7 +538,11 @@ export const courses = [
     instructor: { name: "Aminu Musa", title: "Head of Software, OpenTech" },
     image: "",
     featured: true,
-    outcomes: ["Write clean Python scripts", "Work with files and APIs", "Automate repetitive tasks"],
+    outcomes: [
+      "Write clean Python scripts",
+      "Work with files and APIs",
+      "Automate repetitive tasks",
+    ],
     requirements: ["A laptop and internet access"],
     createdAt: "2026-01-25T10:00:00.000Z",
   },
@@ -547,20 +572,111 @@ export const courses = [
 ];
 
 export const lessons = [
-  { id: 1, courseId: 1, title: "Welcome & how the course works", duration: "08:12", order: 1, isFree: true },
-  { id: 2, courseId: 1, title: "Meet the Arduino board", duration: "14:30", order: 2, isFree: true },
-  { id: 3, courseId: 1, title: "Setting up the Arduino IDE", duration: "11:45", order: 3, isFree: false },
-  { id: 4, courseId: 1, title: "Your first sketch: blinking an LED", duration: "18:02", order: 4, isFree: false },
-  { id: 5, courseId: 1, title: "Digital inputs and buttons", duration: "16:20", order: 5, isFree: false },
-  { id: 6, courseId: 1, title: "Analog sensors and the serial monitor", duration: "22:10", order: 6, isFree: false },
-  { id: 7, courseId: 1, title: "Controlling motors and servos", duration: "24:48", order: 7, isFree: false },
-  { id: 8, courseId: 1, title: "Final project: smart desk lamp", duration: "31:05", order: 8, isFree: false },
-  { id: 9, courseId: 5, title: "Installing Python and your editor", duration: "10:15", order: 1, isFree: true },
-  { id: 10, courseId: 5, title: "Variables, numbers and strings", duration: "19:40", order: 2, isFree: false },
-  { id: 11, courseId: 5, title: "Lists, dictionaries and loops", duration: "23:12", order: 3, isFree: false },
-  { id: 12, courseId: 5, title: "Functions and modules", duration: "20:33", order: 4, isFree: false },
+  {
+    id: 1,
+    courseId: 1,
+    title: "Welcome & how the course works",
+    duration: "08:12",
+    order: 1,
+    isFree: true,
+  },
+  {
+    id: 2,
+    courseId: 1,
+    title: "Meet the Arduino board",
+    duration: "14:30",
+    order: 2,
+    isFree: true,
+  },
+  {
+    id: 3,
+    courseId: 1,
+    title: "Setting up the Arduino IDE",
+    duration: "11:45",
+    order: 3,
+    isFree: false,
+  },
+  {
+    id: 4,
+    courseId: 1,
+    title: "Your first sketch: blinking an LED",
+    duration: "18:02",
+    order: 4,
+    isFree: false,
+  },
+  {
+    id: 5,
+    courseId: 1,
+    title: "Digital inputs and buttons",
+    duration: "16:20",
+    order: 5,
+    isFree: false,
+  },
+  {
+    id: 6,
+    courseId: 1,
+    title: "Analog sensors and the serial monitor",
+    duration: "22:10",
+    order: 6,
+    isFree: false,
+  },
+  {
+    id: 7,
+    courseId: 1,
+    title: "Controlling motors and servos",
+    duration: "24:48",
+    order: 7,
+    isFree: false,
+  },
+  {
+    id: 8,
+    courseId: 1,
+    title: "Final project: smart desk lamp",
+    duration: "31:05",
+    order: 8,
+    isFree: false,
+  },
+  {
+    id: 9,
+    courseId: 5,
+    title: "Installing Python and your editor",
+    duration: "10:15",
+    order: 1,
+    isFree: true,
+  },
+  {
+    id: 10,
+    courseId: 5,
+    title: "Variables, numbers and strings",
+    duration: "19:40",
+    order: 2,
+    isFree: false,
+  },
+  {
+    id: 11,
+    courseId: 5,
+    title: "Lists, dictionaries and loops",
+    duration: "23:12",
+    order: 3,
+    isFree: false,
+  },
+  {
+    id: 12,
+    courseId: 5,
+    title: "Functions and modules",
+    duration: "20:33",
+    order: 4,
+    isFree: false,
+  },
   { id: 13, courseId: 5, title: "Working with files", duration: "17:26", order: 5, isFree: false },
-  { id: 14, courseId: 5, title: "Final project: expense tracker script", duration: "28:50", order: 6, isFree: false },
+  {
+    id: 14,
+    courseId: 5,
+    title: "Final project: expense tracker script",
+    duration: "28:50",
+    order: 6,
+    isFree: false,
+  },
 ];
 
 export const courseRatings = [
@@ -570,7 +686,8 @@ export const courseRatings = [
     userId: 3,
     userName: "Chinedu Okafor",
     rating: 5,
-    comment: "The instructor explains everything slowly and the projects are real. Worth every naira.",
+    comment:
+      "The instructor explains everything slowly and the projects are real. Worth every naira.",
     createdAt: "2026-06-18T12:00:00.000Z",
   },
   {
@@ -660,15 +777,38 @@ export const cart = {
   id: 1,
   userId: 3,
   items: [
-    { id: 1, productId: 1, name: "Arduino Uno R3", price: 18500, quantity: 1, stock: 42, image: "" },
-    { id: 2, productId: 4, name: "Jumper Wires Pack (120 pcs)", price: 3500, quantity: 2, stock: 120, image: "" },
+    {
+      id: 1,
+      productId: 1,
+      name: "Arduino Uno R3",
+      price: 18500,
+      quantity: 1,
+      stock: 42,
+      image: "",
+    },
+    {
+      id: 2,
+      productId: 4,
+      name: "Jumper Wires Pack (120 pcs)",
+      price: 3500,
+      quantity: 2,
+      stock: 120,
+      image: "",
+    },
   ],
   subtotal: 25500,
   updatedAt: "2026-08-30T10:15:00.000Z",
 };
 
 export const favourites = [
-  { id: 1, productId: 2, name: "ESP32 Dev Board (WiFi + Bluetooth)", price: 16500, stock: 27, image: "" },
+  {
+    id: 1,
+    productId: 2,
+    name: "ESP32 Dev Board (WiFi + Bluetooth)",
+    price: 16500,
+    stock: 27,
+    image: "",
+  },
   { id: 2, productId: 8, name: "Raspberry Pi 4 Model B (4GB)", price: 96000, stock: 6, image: "" },
 ];
 
@@ -705,7 +845,15 @@ export const orders = [
     deliveryAddress: "45 Ogui Road, Enugu",
     deliveryPhone: "+2347031122334",
     deliveryEmail: "chinedu.okafor@gmail.com",
-    items: [{ id: 3, productId: 2, name: "ESP32 Dev Board (WiFi + Bluetooth)", price: 16500, quantity: 1 }],
+    items: [
+      {
+        id: 3,
+        productId: 2,
+        name: "ESP32 Dev Board (WiFi + Bluetooth)",
+        price: 16500,
+        quantity: 1,
+      },
+    ],
     createdAt: "2026-08-21T09:05:00.000Z",
   },
   {
@@ -721,7 +869,9 @@ export const orders = [
     deliveryAddress: "Wuse 2, Abuja",
     deliveryPhone: "+2348055667788",
     deliveryEmail: "fatima.bello@yahoo.com",
-    items: [{ id: 4, productId: 8, name: "Raspberry Pi 4 Model B (4GB)", price: 96000, quantity: 1 }],
+    items: [
+      { id: 4, productId: 8, name: "Raspberry Pi 4 Model B (4GB)", price: 96000, quantity: 1 },
+    ],
     createdAt: "2026-09-01T17:48:00.000Z",
   },
   {
@@ -737,7 +887,9 @@ export const orders = [
     deliveryAddress: "Ikeja, Lagos",
     deliveryPhone: "+2348123456789",
     deliveryEmail: "tunde.adeyemi@gmail.com",
-    items: [{ id: 5, productId: 3, name: "Robot Car Chassis Kit (4WD)", price: 27500, quantity: 1 }],
+    items: [
+      { id: 5, productId: 3, name: "Robot Car Chassis Kit (4WD)", price: 27500, quantity: 1 },
+    ],
     createdAt: "2026-08-11T11:12:00.000Z",
   },
 ];
@@ -1108,7 +1260,12 @@ export const budgetRanges = [
   "Above ₦5,000,000",
 ];
 
-export const timelines = ["Less than 1 month", "1 - 3 months", "3 - 6 months", "More than 6 months"];
+export const timelines = [
+  "Less than 1 month",
+  "1 - 3 months",
+  "3 - 6 months",
+  "More than 6 months",
+];
 
 export const serviceCategories = [
   "Software Development",

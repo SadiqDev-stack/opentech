@@ -61,7 +61,9 @@ export async function request(path, options = {}) {
   let url = `${API_URL}${path}`;
   if (params) {
     const search = new URLSearchParams(
-      Object.entries(params).filter(([, value]) => value !== undefined && value !== "" && value !== null),
+      Object.entries(params).filter(
+        ([, value]) => value !== undefined && value !== "" && value !== null,
+      ),
     ).toString();
     if (search) url += `?${search}`;
   }

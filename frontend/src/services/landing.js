@@ -29,7 +29,11 @@ export async function getLandingData() {
 export async function getPublicConfig() {
   if (USE_MOCK_DATA) {
     return mockResponse(
-      { company: config.company, categories: config.categories, maintenanceMode: config.maintenanceMode },
+      {
+        company: config.company,
+        categories: config.categories,
+        maintenanceMode: config.maintenanceMode,
+      },
       "Config retrieved",
     );
   }

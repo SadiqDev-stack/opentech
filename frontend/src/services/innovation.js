@@ -14,7 +14,10 @@ export async function submitInnovationRequest(payload) {
 
 export async function getMyInnovationRequests() {
   if (USE_MOCK_DATA) {
-    return mockResponse({ requests: innovationRequests.filter((r) => r.userId === 3) }, "Requests retrieved");
+    return mockResponse(
+      { requests: innovationRequests.filter((r) => r.userId === 3) },
+      "Requests retrieved",
+    );
   }
   return api.get("/innovation");
 }
