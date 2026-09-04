@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
 
 /** OpenTech wordmark. Sub-label changes per area (Store / Academy). */
 export default function Logo({ sub = "Innovate. Build. Impact.", light = true }) {

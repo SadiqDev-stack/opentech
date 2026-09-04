@@ -1,29 +1,14 @@
 import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
 import SiteLayout, { PageHero } from "@/components/SiteLayout";
 import { Button, Card, Field, Input, Textarea, Select } from "@/components/ui-kit";
 import { sendContactMessage } from "@/services/contact";
 import { company, serviceCategories } from "@/central/util/mockdata";
 import { isEmail, required, validate } from "@/utils/validation";
 
-export const Route = createFileRoute("/contact")({
-  head: () => ({
-    meta: [
-      { title: "Contact OpenTech — Talk to our team" },
-      {
-        name: "description",
-        content: "Reach OpenTech by phone, email or the contact form for solutions, orders and course enquiries.",
-      },
-      { property: "og:title", content: "Contact OpenTech" },
-      { property: "og:description", content: "Phone, email, address and a contact form for the OpenTech team." },
-    ],
-  }),
-  component: ContactPage,
-});
 
 const empty = { fullName: "", email: "", phone: "", subject: "", message: "" };
 
-function ContactPage() {
+export default function ContactPage() {
   const [values, setValues] = useState(empty);
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState({ state: "idle", message: "" });

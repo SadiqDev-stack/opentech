@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation } from "react-router-dom";
 import Logo from "./Logo";
 import { ButtonLink } from "./ui-kit";
 import { useCart } from "@/context/CartContext";

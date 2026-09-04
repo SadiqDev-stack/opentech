@@ -1,4 +1,4 @@
-import { Link, useParams } from "@tanstack/react-router";
+import { Link, useParams } from "react-router-dom";
 import SiteLayout, { PageHero } from "./SiteLayout";
 import { Button, ButtonLink, Card, Field, Input, Select, Textarea, SectionHeading, Badge, Stars } from "./ui-kit";
 import { products, courses, categories, company } from "@/central/util/mockdata";

@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
 import { Badge, Button, Stars } from "./ui-kit";
 import { formatNaira } from "@/utils/format";
 import { useCart } from "@/context/CartContext";
