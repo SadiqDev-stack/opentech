@@ -7,13 +7,15 @@ export function notFound(req, res) {
 export function errorHandler(err, req, res, next) {
   const status = err.status || err.statusCode || 500;
 
-  if (!env.isProd) {
-    console.error('[error]', err);
-  }
+  // LOG EVERYTHING TO TERMINAL FOR DEBUGGING
+  console.error(`\n\x1b[31m[ERROR] ${req.method} ${req.originalUrl}\x1b[0m`);
+  console.error(`\x1b[31mStatus: ${status}\x1b[0m`);
+  console.error(`\x1b[31mMessage: ${err.message}\x1b[0m`);
+  console.error(`\x1b[31mStack: ${err.stack}\x1b[0m\n`);
 
   res.status(status).json({
     success: false,
-    message: env.isProd ? err.publicMessage || 'Something went wrong' : err.message || 'Something went wrong',
+    message: env.isProd ? 'Something went wrong' : err.message,
     data: null
   });
 }
