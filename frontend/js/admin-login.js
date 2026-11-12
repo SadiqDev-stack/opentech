@@ -1,7 +1,13 @@
-(async function() {
-  await App.i18n.init(); // Admin pages usually English, but switch works
-  document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
+(async function () {
+  await App.i18n.init(); 
+  // No injectChrome here, admin login is standalone
+  
+  const form = document.getElementById('adminLoginForm');
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    window.location.href = '/message?type=info&title=Check your email&text=We sent an admin verification link to your email.&back=/admin-login';
+    await App.form.submit(form, async (data) => {
+      const res = await App.api.post('/auth/admin-login', data);
+      window.location.href = '/message?type=info&title=Check Email&text=We sent a login verification link to your admin email.&back=/admin-login';
+    });
   });
 })();

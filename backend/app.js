@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser';
 
 import env from './config/env.js';
 import { notFound, errorHandler } from './middleware/error.js';
+import authRoutes from './routes/auth.routes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,27 +21,19 @@ app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// ---------- API FIRST (never disturbed by static) ----------
+// ---------- API ROUTES ----------
 app.get('/api/health', (req, res) => {
-  res.json({
-    success: true,
-    message: 'OpenTech API is running',
-    data: { time: new Date().toISOString(), env: env.nodeEnv }
-  });
+  res.json({ success: true, message: 'OpenTech API is running', data: { time: new Date().toISOString() } });
 });
 
-// Future API routes will mount here, e.g.:
-// app.use('/api/auth', authRoutes);
-// app.use('/api', indexRoutes);
+app.use('/api/auth', authRoutes);
 
 // ---------- STATIC FRONTEND ----------
 const FRONTEND = path.resolve(__dirname, '..', 'frontend');
 app.use(express.static(FRONTEND, { extensions: ['html'] }));
 
-// Clean paths
 app.get('/', (req, res) => res.sendFile(path.join(FRONTEND, 'index.html')));
 
-// Any unknown non-API GET goes to 404 page
 app.use((req, res, next) => {
   if (req.path.startsWith('/api')) return next();
   if (req.method !== 'GET') return next();
