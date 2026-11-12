@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Products — OpenTech</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="/css/base.css" />
+  <link rel="stylesheet" href="/css/layout.css" />
+  <link rel="stylesheet" href="/css/components.css" />
+  <link rel="stylesheet" href="/css/pages.css" />
+</head>
+<body>
+  <div class="admin-page-content">
+    <div class="flex justify-between items-center mb-4">
+      <h1 class="section__title mb-0">Manage Products</h1>
+      <button class="btn btn--primary btn--sm" onclick="App.notify.info('Create product modal')"><i class="fa-solid fa-plus"></i> Add Product</button>
+    </div>
+    <div class="card p-4" style="overflow-x:auto;">
+      <table style="width:100%; text-align:left; border-collapse:collapse;">
+        <thead>
+          <tr style="border-bottom:1px solid var(--color-border); color:var(--color-muted); font-size:12px;">
+            <th class="p-3">Product</th>
+            <th class="p-3">Price</th>
+            <th class="p-3">Stock</th>
+            <th class="p-3">Status</th>
+          </tr>
+        </thead>
+        <tbody id="productsTbody">
+          <tr><td colspan="4" class="p-4 text-center"><i class="fa-solid fa-spinner fa-spin"></i></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <script src="/js/core.js"></script>
+  <script src="/js/admin.js"></script>
+  <script>
+    (async function() {
+      const tbody = document.getElementById('productsTbody');
+      try {
+        const res = await App.api.get('/products');
+        if (res.data.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-muted">No products yet</td></tr>'; return; }
+        tbody.innerHTML = res.data.map(p => `
+          <tr style="border-bottom:1px solid var(--color-border); font-size:14px;">
+            <td class="p-3 flex items-center gap-3">
+              <img src="${p.image}" style="width:40px; height:40px; border-radius:4px; object-fit:cover;">
+              <span class="text-white font-bold">${p.name.en}</span>
+            </td>
+            <td class="p-3 text-gold font-bold">${App.naira(p.price)}</td>
+            <td class="p-3">
+              <input type="number" value="${p.stock}" class="field__input" style="width:70px; padding:4px; font-size:12px;">
+              <button class="text-gold text-xs ml-2" onclick="App.notify.success('Stock saved')">Save</button>
+            </td>
+            <td class="p-3"><span class="badge ${p.stock > 0 ? 'badge--success' : 'badge--error'}">${p.stock > 0 ? 'In Stock' : 'Out of Stock'}</span></td>
+          </tr>
+        `).join('');
+      } catch (err) { tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-error">Failed to load</td></tr>'; }
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Enrollments — OpenTech</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="/css/base.css" />
+  <link rel="stylesheet" href="/css/layout.css" />
+  <link rel="stylesheet" href="/css/components.css" />
+  <link rel="stylesheet" href="/css/pages.css" />
+</head>
+<body>
+  <div class="admin-page-content">
+    <h1 class="section__title mb-4">Course Enrollments</h1>
+    <div class="card p-4" style="overflow-x:auto;">
+      <table style="width:100%; text-align:left; border-collapse:collapse;">
+        <thead>
+          <tr style="border-bottom:1px solid var(--color-border); color:var(--color-muted); font-size:12px;">
+            <th class="p-3">Student</th>
+            <th class="p-3">Course</th>
+            <th class="p-3">Status</th>
+            <th class="p-3">Date</th>
+          </tr>
+        </thead>
+        <tbody id="enrollmentsTbody">
+          <tr><td colspan="4" class="p-4 text-center"><i class="fa-solid fa-spinner fa-spin"></i></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <script src="/js/core.js"></script>
+  <script src="/js/admin.js"></script>
+  <script>
+    (async function() {
+      const tbody = document.getElementById('enrollmentsTbody');
+      try {
+        const res = await App.api.get('/admin/enrollments');
+        if (res.data.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-muted">No enrollments yet</td></tr>'; return; }
+        tbody.innerHTML = res.data.map(e => `
+          <tr style="border-bottom:1px solid var(--color-border); font-size:14px;">
+            <td class="p-3"><div class="text-white font-bold">${e.user?.fullName || 'N/A'}</div><div class="text-muted text-xs">${e.user?.email}</div></td>
+            <td class="p-3 text-white">${e.course?.title?.en || 'Course'}</td>
+            <td class="p-3"><span class="badge ${e.status === 'paid' ? 'badge--success' : 'badge--gold'}">${e.status}</span></td>
+            <td class="p-3 text-muted">${new Date(e.createdAt).toLocaleDateString()}</td>
+          </tr>
+        `).join('');
+      } catch (err) { tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-error">Failed to load</td></tr>'; }
+    })();
+  </script>
+</body>
+</html>

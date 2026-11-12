@@ -1,55 +1,109 @@
 (async function () {
-  await App.i18n.init();
-  App.injectChrome();
-
-  const mockProducts = [
-    { _id: 'p1', name: { ha: 'ESP32 IoT Module Kit', en: 'ESP32 IoT Module Kit' }, description: { ha: 'Relay module da Wi-Fi.', en: 'Relay and Wi-Fi module.' }, price: 14500, image: 'https://images.unsplash.com/photo-1553406830-ef2513450d76?auto=format&fit=crop&w=600&q=70', stock: 45 },
-    { _id: 'p2', name: { ha: 'MPPT Solar Controller 30A', en: 'MPPT Solar Controller 30A' }, description: { ha: 'Kariya ga batir da caji.', en: 'Battery protection.' }, price: 24000, image: 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&w=600&q=70', stock: 12 },
-    { _id: 'p3', name: { ha: 'Digital Multimeter', en: 'Digital Multimeter' }, description: { ha: 'Kayan gwajin voltage.', en: 'Voltage testing tool.' }, price: 12500, image: 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&w=600&q=70', stock: 0 }
-  ];
-
-  const lang = App.i18n.lang;
-  const t = (obj) => obj[lang] || obj.ha;
+  await App.i18n.init(); App.injectChrome();
+  
   const grid = document.getElementById('productsGrid');
-  const searchInput = document.getElementById('productSearchInput');
+  const searchInput = document.getElementById('productSearch');
+  const checkoutForm = document.getElementById('checkoutForm');
+  let allProducts = [];
 
-  function render(products) {
+  async function loadProducts(query = '') {
+    grid.innerHTML = '<div class="skeleton skeleton--card"></div>';
+    try {
+      const res = await App.api.get(`/products?search=${query}`);
+      allProducts = res.data || [];
+      renderProducts(allProducts);
+    } catch (err) {
+      grid.innerHTML = App.render.empty('fa-exclamation-triangle', 'Error loading products');
+    }
+  }
+
+  function renderProducts(products) {
     if (products.length === 0) {
       grid.innerHTML = App.render.empty('fa-store', 'No products found.');
       return;
     }
-    grid.innerHTML = products.map((p) => {
+    grid.innerHTML = products.map(p => {
+      const name = p.name[App.i18n.lang] || p.name.ha;
+      const desc = p.description[App.i18n.lang] || p.description.ha;
       const isOut = p.stock === 0;
       return `
       <article class="product-card">
-        <div class="product-card__media">
-          <img src="${p.image}" alt="${App.render.escape(t(p.name))}" loading="lazy" />
+        <div class="product-card__media" style="position:relative">
+          <img src="${p.image}" alt="${name}" loading="lazy" />
           ${isOut ? '<span class="badge badge--error" style="position:absolute;top:8px;left:8px">Out of Stock</span>' : ''}
         </div>
-        <h3 class="product-card__title">${App.render.escape(t(p.name))}</h3>
+        <h3 class="product-card__title">${name}</h3>
         <span class="product-card__price">${App.naira(p.price)}</span>
         <div class="product-card__actions">
-          <button class="btn btn--outline" onclick="App.cart.add({id:'${p._id}', name:'${App.render.escape(t(p.name))}', price:${p.price}, image:'${p.image}'})" ${isOut ? 'disabled' : ''}>
-            <i class="fa-solid fa-cart-plus"></i>${App.i18n.t('add_to_cart_btn')}
+          <button class="btn btn--outline" data-add="${p._id}" ${isOut ? 'disabled' : ''}>
+            <i class="fa-solid fa-cart-plus"></i> Add
           </button>
-          <button class="btn btn--primary" onclick="App.notify.info('Checkout opens soon')" ${isOut ? 'disabled' : ''}>
-            ${App.i18n.t('buy_now_btn')}
+          <button class="btn btn--primary" data-buy="${p._id}" ${isOut ? 'disabled' : ''}>
+            Buy Now
           </button>
         </div>
       </article>
       `;
     }).join('');
+
+    // Bind buttons
+    document.querySelectorAll('[data-add]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const p = allProducts.find(x => x._id === btn.dataset.add);
+        if (p) {
+          App.cart.add({
+            id: p._id,
+            name: p.name[App.i18n.lang] || p.name.ha,
+            price: p.price,
+            image: p.image
+          });
+        }
+      });
+    });
+
+    document.querySelectorAll('[data-buy]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const p = allProducts.find(x => x._id === btn.dataset.buy);
+        if (p) {
+          openCheckout([{ productId: p._id, quantity: 1 }], p.price);
+        }
+      });
+    });
   }
 
-  render(mockProducts);
+  function openCheckout(items, total) {
+    document.getElementById('checkoutItemCount').textContent = `${items.length} item(s)`;
+    document.getElementById('checkoutTotal').textContent = App.naira(total);
+    App.modal.open('checkoutModal');
+    
+    // Store current cart in a temporary variable
+    window._currentCheckoutItems = items;
+  }
 
-  searchInput.addEventListener('input', (e) => {
-    const q = e.target.value.toLowerCase();
-    const filtered = mockProducts.filter(p => 
-      t(p.name).toLowerCase().includes(q) || t(p.description).toLowerCase().includes(q)
-    );
-    render(filtered);
+  // Handle "Purchase All" from cart
+  window.purchaseCart = () => {
+    const cart = App.cart.get();
+    if (cart.length === 0) return App.notify.warning('Cart is empty');
+    
+    const items = cart.map(c => ({ productId: c.id, quantity: c.qty }));
+    const total = cart.reduce((sum, c) => sum + (c.price * c.qty), 0);
+    openCheckout(items, total);
+  };
+
+  checkoutForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const items = window._currentCheckoutItems;
+    
+    await App.form.submit(checkoutForm, async (data) => {
+      const res = await App.api.post('/orders/checkout', { ...data, items });
+      window.location.href = res.data.authorization_url;
+    });
   });
 
-  window.addEventListener('langChanged', () => render(mockProducts));
+  searchInput.addEventListener('input', (e) => {
+    clearTimeout(window.searchTimeout);
+    window.searchTimeout = setTimeout(() => loadProducts(e.target.value), 300);
+  });
+
+  loadProducts();
 })();

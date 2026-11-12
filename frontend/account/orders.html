@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ha">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Orders — OpenTech</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="/css/base.css" />
+  <link rel="stylesheet" href="/css/layout.css" />
+  <link rel="stylesheet" href="/css/components.css" />
+  <link rel="stylesheet" href="/css/pages.css" />
+</head>
+<body>
+  <main class="section" style="max-width: 900px; margin: 0 auto;">
+    <div class="flex items-center gap-3 mb-4 p-4" style="background:var(--color-card); border:1px solid var(--color-border); border-radius:var(--radius-lg);">
+      <div class="w-10 h-10 rounded-full flex items-center justify-center text-gold font-bold" style="background:rgba(198,160,82,0.2); border:1px solid var(--color-gold);"><i class="fa-solid fa-user"></i></div>
+      <div style="flex:1;"><div class="font-bold text-white account-name">Loading...</div></div>
+    </div>
+    <div id="accountNav"></div>
+    
+    <div id="panel-orders" class="tab-panel mt-4">
+      <h2 class="section__title mb-4">My Orders</h2>
+      <div id="ordersList" class="flex-col gap-4">
+        <div class="skeleton skeleton--card"></div>
+      </div>
+    </div>
+  </main>
+
+  <script src="/js/core.js"></script>
+  <script src="/js/account.js"></script>
+  <script>
+    (async function() {
+      const ref = new URLSearchParams(window.location.search).get('verify');
+      if (ref) {
+        App.notify.info('Verifying payment...');
+        try {
+          await App.api.post('/orders/verify', { reference: ref });
+          App.notify.success('Payment confirmed!');
+          window.history.replaceState({}, document.title, window.location.pathname);
+        } catch (err) { App.notify.error('Verification failed'); }
+      }
+
+      const container = document.getElementById('ordersList');
+      try {
+        const res = await App.api.get('/orders/mine');
+        if (!res.data || res.data.length === 0) {
+          container.innerHTML = App.render.empty('fa-receipt', 'No orders yet.');
+          return;
+        }
+        container.innerHTML = res.data.map(order => {
+          const itemsList = order.items.map(i => `${i.name} (x${i.quantity})`).join(', ');
+          const isPaid = order.paymentStatus === 'paid';
+          return `
+          <div class="card p-4 mb-4">
+            <div class="flex justify-between items-center border-b border-surface-border pb-3 mb-3">
+              <div>
+                <span class="text-muted text-xs block">Order ID</span>
+                <span class="font-bold text-white">#${order.orderNumber}</span>
+              </div>
+              <span class="badge ${isPaid ? 'badge--success' : 'badge--muted'}">${order.paymentStatus.toUpperCase()}</span>
+            </div>
+            <p class="text-sm text-white mb-3">${itemsList}</p>
+            <div class="flex justify-between items-center p-3" style="background:var(--color-elevated); border-radius:8px; font-size:12px;">
+              <div>
+                <span class="text-muted block">Total</span>
+                <span class="text-gold font-bold">${App.naira(order.totalAmount)}</span>
+              </div>
+              <div>
+                <span class="text-muted block">Delivery</span>
+                <span class="text-white font-bold">${order.deliveryStatus.toUpperCase()}</span>
+              </div>
+            </div>
+          </div>
+          `;
+        }).join('');
+      } catch (err) {
+        container.innerHTML = App.render.empty('fa-exclamation-circle', 'Please login to view orders.');
+      }
+    })();
+  </script>
+</body>
+</html>

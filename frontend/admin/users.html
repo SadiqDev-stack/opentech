@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Users — OpenTech</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="/css/base.css" />
+  <link rel="stylesheet" href="/css/layout.css" />
+  <link rel="stylesheet" href="/css/components.css" />
+  <link rel="stylesheet" href="/css/pages.css" />
+</head>
+<body>
+  <div class="admin-page-content">
+    <h1 class="section__title mb-4">Manage Users</h1>
+    <div class="card p-4" style="overflow-x:auto;">
+      <table style="width:100%; text-align:left; border-collapse:collapse;">
+        <thead>
+          <tr style="border-bottom:1px solid var(--color-border); color:var(--color-muted); font-size:12px;">
+            <th class="p-3">User</th>
+            <th class="p-3">Role</th>
+            <th class="p-3">Status</th>
+            <th class="p-3">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="usersTbody">
+          <tr><td colspan="4" class="p-4 text-center"><i class="fa-solid fa-spinner fa-spin"></i></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <script src="/js/core.js"></script>
+  <script src="/js/admin.js"></script>
+  <script>
+    async function loadUsers() {
+      const tbody = document.getElementById('usersTbody');
+      try {
+        const res = await App.api.get('/admin/users');
+        tbody.innerHTML = res.data.map(u => `
+          <tr style="border-bottom:1px solid var(--color-border); font-size:14px;">
+            <td class="p-3"><div class="text-white font-bold">${u.fullName}</div><div class="text-muted text-xs">${u.email}</div></td>
+            <td class="p-3">
+              <select onchange="updateRole('${u.id}', this.value)" class="field__input" style="padding:4px; font-size:12px;">
+                <option value="customer" ${u.role==='customer'?'selected':''}>Customer</option>
+                <option value="admin" ${u.role==='admin'?'selected':''}>Admin</option>
+              </select>
+            </td>
+            <td class="p-3"><span class="badge ${u.active ? 'badge--success' : 'badge--error'}">${u.active ? 'Active' : 'Disabled'}</span></td>
+            <td class="p-3">
+              <button class="btn btn--outline btn--sm" onclick="toggleStatus('${u.id}', ${!u.active})">${u.active ? 'Disable' : 'Enable'}</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) { tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-error">Failed to load users</td></tr>'; }
+    }
+
+    async function updateRole(id, role) {
+      try { await App.api.put(`/admin/users/${id}/role`, { role }); App.notify.success('Role updated'); } catch { App.notify.error('Failed'); }
+    }
+    async function toggleStatus(id, active) {
+      try { await App.api.put(`/admin/users/${id}/status`, { active }); App.notify.success('Status updated'); loadUsers(); } catch { App.notify.error('Failed'); }
+    }
+
+    loadUsers();
+  </script>
+</body>
+</html>

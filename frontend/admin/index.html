@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — OpenTech</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="/css/base.css" />
+  <link rel="stylesheet" href="/css/layout.css" />
+  <link rel="stylesheet" href="/css/components.css" />
+  <link rel="stylesheet" href="/css/pages.css" />
+</head>
+<body>
+  <div class="admin-page-content">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="section__title mb-0">Dashboard Overview</h1>
+      <button class="btn btn--outline btn--sm" onclick="location.reload()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+    </div>
+    <div class="grid-2 mb-6" style="grid-template-columns: repeat(4, 1fr);">
+      <div class="card p-4"><span class="text-muted text-xs block">Total Users</span><span id="statUsers" class="stat__value text-white">0</span></div>
+      <div class="card p-4"><span class="text-muted text-xs block">Total Orders</span><span id="statOrders" class="stat__value text-white">0</span></div>
+      <div class="card p-4"><span class="text-muted text-xs block">Enrollments</span><span id="statEnrollments" class="stat__value text-gold">0</span></div>
+      <div class="card p-4"><span class="text-muted text-xs block">Innovations</span><span id="statInnovations" class="stat__value text-white">0</span></div>
+    </div>
+    <div class="grid-2" style="grid-template-columns: repeat(3, 1fr);">
+      <div class="card p-4" style="border-color:var(--color-gold);"><span class="text-gold text-xs block">Pending Orders</span><span id="statPendingOrders" class="stat__value text-gold">0</span></div>
+      <div class="card p-4" style="border-color:var(--color-gold);"><span class="text-gold text-xs block">Pending Requests</span><span id="statPendingRequests" class="stat__value text-gold">0</span></div>
+      <div class="card p-4" style="border-color:var(--color-badge-red);"><span class="text-error text-xs block">Unresolved Reports</span><span id="statUnresolved" class="stat__value text-error">0</span></div>
+    </div>
+  </div>
+  <script src="/js/core.js"></script>
+  <script src="/js/admin.js"></script>
+  <script>
+    (async function() {
+      try {
+        const res = await App.api.get('/admin/stats');
+        const s = res.data;
+        document.getElementById('statUsers').textContent = s.users;
+        document.getElementById('statOrders').textContent = s.orders;
+        document.getElementById('statEnrollments').textContent = s.enrollments;
+        document.getElementById('statInnovations').textContent = s.innovations;
+        document.getElementById('statPendingOrders').textContent = s.pendingOrders;
+        document.getElementById('statPendingRequests').textContent = s.pendingRequests;
+        document.getElementById('statUnresolved').textContent = s.unresolvedReports;
+      } catch (err) { App.notify.error('Failed to load stats'); }
+    })();
+  </script>
+</body>
+</html>

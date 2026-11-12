@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ha">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Settings — OpenTech</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="/css/base.css" />
+  <link rel="stylesheet" href="/css/layout.css" />
+  <link rel="stylesheet" href="/css/components.css" />
+  <link rel="stylesheet" href="/css/pages.css" />
+</head>
+<body>
+  <main class="section" style="max-width: 900px; margin: 0 auto;">
+    <div class="flex items-center gap-3 mb-4 p-4" style="background:var(--color-card); border:1px solid var(--color-border); border-radius:var(--radius-lg);">
+      <div class="w-10 h-10 rounded-full flex items-center justify-center text-gold font-bold" style="background:rgba(198,160,82,0.2); border:1px solid var(--color-gold);"><i class="fa-solid fa-user"></i></div>
+      <div style="flex:1;"><div class="font-bold text-white account-name">Loading...</div></div>
+    </div>
+    <div id="accountNav"></div>
+    
+    <div id="panel-settings" class="tab-panel mt-4">
+      <div class="card p-5 mb-6">
+        <h3 class="font-bold text-white mb-4 border-b border-surface-border pb-2">Bayanin Shaidar Kai (Profile Information)</h3>
+        <form id="profileForm" class="flex-col gap-3">
+          <div class="field">
+            <label class="field__label">Cikakken Suna (Full Name)</label>
+            <input type="text" name="fullName" class="field__input" required />
+          </div>
+          <div class="field">
+            <label class="field__label">Email</label>
+            <input type="email" id="profileEmail" class="field__input" readonly style="opacity:0.6; cursor:not-allowed;" />
+          </div>
+          <div class="field">
+            <label class="field__label">Lambar Waya (Phone)</label>
+            <input type="tel" name="phone" class="field__input" required />
+          </div>
+          <button type="submit" class="btn btn--primary btn--sm mt-2" style="align-self:flex-start;">Ajiye Canje-canje (Save Changes)</button>
+        </form>
+      </div>
+
+      <div class="card p-5">
+        <h3 class="font-bold text-white mb-4 border-b border-surface-border pb-2">Canza Kalmar Sirri (Change Password)</h3>
+        <form id="passwordForm" class="flex-col gap-3">
+          <div class="field">
+            <label class="field__label">Tsohuwar Kalmar Sirri (Current Password)</label>
+            <input type="password" name="currentPassword" class="field__input" required placeholder="********" />
+          </div>
+          <div class="field">
+            <label class="field__label">Sabuwar Kalmar Sirri (New Password)</label>
+            <input type="password" name="newPassword" class="field__input" required minlength="6" placeholder="********" />
+          </div>
+          <button type="submit" class="btn btn--outline btn--sm mt-2" style="align-self:flex-start;">Sabunta Kalmar Sirri (Update Password)</button>
+        </form>
+      </div>
+    </div>
+  </main>
+  
+  <script src="/js/core.js"></script>
+  <script src="/js/account.js"></script>
+  <script>
+    (async function() {
+      const user = App.auth.user;
+      
+      if (user) {
+        document.querySelector('#profileForm [name="fullName"]').value = user.fullName || '';
+        document.querySelector('#profileForm [name="phone"]').value = user.phone || '';
+        document.getElementById('profileEmail').value = user.email || '';
+      }
+
+      document.getElementById('profileForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await App.form.submit(e.target, async (data) => {
+          const res = await App.api.put('/users/profile', data);
+          App.notify.success('Profile updated successfully');
+          App.auth.user = res.data;
+          document.querySelector('.account-name').textContent = res.data.fullName;
+        });
+      });
+
+      document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await App.form.submit(e.target, async (data) => {
+          await App.api.put('/users/password', data);
+          App.notify.success('Password updated successfully');
+          e.target.reset();
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

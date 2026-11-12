@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Reports — OpenTech</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="/css/base.css" />
+  <link rel="stylesheet" href="/css/layout.css" />
+  <link rel="stylesheet" href="/css/components.css" />
+  <link rel="stylesheet" href="/css/pages.css" />
+</head>
+<body>
+  <div class="admin-page-content">
+    <h1 class="section__title mb-4">Customer Reports</h1>
+    <div id="reportsList" class="flex-col gap-4">
+      <div class="skeleton skeleton--card"></div>
+    </div>
+  </div>
+  <script src="/js/core.js"></script>
+  <script src="/js/admin.js"></script>
+  <script>
+    (async function() {
+      const container = document.getElementById('reportsList');
+      try {
+        const res = await App.api.get('/admin/reports');
+        if (res.data.length === 0) { container.innerHTML = App.render.empty('fa-flag', 'No reports found'); return; }
+        container.innerHTML = res.data.map(r => `
+          <div class="card p-4 mb-3">
+            <div class="flex justify-between items-center border-b border-surface-border pb-2 mb-2">
+              <div>
+                <span class="font-bold text-white">${r.subject}</span>
+                <span class="text-muted text-xs block">From: ${r.user?.fullName} (${r.user?.email})</span>
+              </div>
+              <span class="badge ${r.status === 'resolved' ? 'badge--success' : 'badge--error'}">${r.status.toUpperCase()}</span>
+            </div>
+            <p class="text-muted text-sm mb-2">${r.description}</p>
+            ${r.status === 'pending' ? `
+              <div class="flex gap-2">
+                <input type="text" id="reply_${r._id}" class="field__input" placeholder="Type response...">
+                <button class="btn btn--primary btn--sm" onclick="resolveReport('${r._id}')">Send & Resolve</button>
+              </div>
+            ` : `<div class="p-3" style="background:var(--color-elevated); border-radius:8px; font-size:12px;"><span class="text-gold font-bold block">Response:</span><span class="text-white">${r.adminResponse || 'No response'}</span></div>`}
+          </div>
+        `).join('');
+      } catch (err) { container.innerHTML = '<p class="text-error">Failed to load reports</p>'; }
+    })();
+
+    async function resolveReport(id) {
+      const reply = document.getElementById(`reply_${id}`).value;
+      if (!reply) return App.notify.warning('Please type a response');
+      try {
+        await App.api.put(`/reports/${id}`, { status: 'resolved', adminResponse: reply });
+        App.notify.success('Report resolved');
+        location.reload();
+      } catch (err) { App.notify.error('Failed to resolve'); }
+    }
+  </script>
+</body>
+</html>

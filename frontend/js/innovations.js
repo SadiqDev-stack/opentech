@@ -1,55 +1,98 @@
 (async function () {
   await App.i18n.init(); App.injectChrome();
-
-  const mockInnovations = [
-    { _id: 'i1', category: { ha: 'Ban Ruwa da Noma', en: 'Irrigation' }, title: { ha: 'Tsarin Ban Ruwa na Solar', en: 'Solar Irrigation System' }, description: { ha: 'An kera wa manoma don rage kudin man fetur.', en: 'Built for farmers to remove fuel costs.' }, image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=900&q=70' },
-    { _id: 'i2', category: { ha: 'Makamashi', en: 'Energy' }, title: { ha: 'Tsarin Wutar Solar 10kVA', en: '10kVA Solar System' }, description: { ha: 'Don asibitoci da masana\'anta.', en: 'For hospitals and factories.' }, image: 'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?auto=format&fit=crop&w=900&q=70' },
-    { _id: 'i3', category: { ha: 'IoT', en: 'IoT' }, title: { ha: 'Na\'urar Sanar da Ruwa', en: 'Water Tank Monitor' }, description: { ha: 'Tana tura SMS idan tanki ya cika.', en: 'Sends SMS when tank is full.' }, image: 'https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?auto=format&fit=crop&w=900&q=70' }
-  ];
-
-  const lang = App.i18n.lang;
-  const t = (obj) => obj[lang] || obj.ha;
+  
   const grid = document.getElementById('innovationsGrid');
-  const searchInput = document.getElementById('innoSearchInput');
+  const searchInput = document.getElementById('innoSearch');
   const requestForm = document.getElementById('requestForm');
+  const fileInput = document.getElementById('requestAttachment');
+  let allInnovations = [];
 
-  function render(items) {
+  async function loadInnovations(query = '') {
+    grid.innerHTML = '<div class="skeleton skeleton--card"></div>';
+    try {
+      const res = await App.api.get(`/innovations?search=${query}`);
+      allInnovations = res.data || [];
+      renderInnovations(allInnovations);
+    } catch (err) {
+      grid.innerHTML = App.render.empty('fa-exclamation-triangle', 'Error loading innovations');
+    }
+  }
+
+  function renderInnovations(items) {
     if (items.length === 0) {
       grid.innerHTML = App.render.empty('fa-microchip', 'No innovations found.');
       return;
     }
-    grid.innerHTML = items.map((i) => `
+    grid.innerHTML = items.map(i => {
+      const title = i.title[App.i18n.lang] || i.title.ha;
+      const desc = i.description[App.i18n.lang] || i.description.ha;
+      return `
       <article class="innovation-card">
         <div class="innovation-card__media">
-          <img src="${i.image}" alt="${App.render.escape(t(i.title))}" loading="lazy" />
-          <span class="innovation-card__tag">${App.render.escape(t(i.category))}</span>
+          <img src="${i.image}" alt="${title}" loading="lazy" />
+          <span class="innovation-card__tag">${i.category}</span>
+          <a href="/project/${i.slug}" style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.7); width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white;"><i class="fa-solid fa-share"></i></a>
         </div>
         <div class="innovation-card__body">
-          <h3 class="innovation-card__title">${App.render.escape(t(i.title))}</h3>
-          <p class="innovation-card__desc">${App.render.escape(t(i.description))}</p>
+          <h3 class="innovation-card__title">${title}</h3>
+          <p class="innovation-card__desc">${desc}</p>
+          <a href="/project/${i.slug}" class="btn btn--outline btn--block mt-auto">View Details</a>
         </div>
       </article>
-    `).join('');
+      `;
+    }).join('');
   }
 
-  render(mockInnovations);
+  // File Upload to Cloudinary (Direct)
+  fileInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-  searchInput.addEventListener('input', (e) => {
-    const q = e.target.value.toLowerCase();
-    const filtered = mockInnovations.filter(i => 
-      t(i.title).toLowerCase().includes(q) || t(i.description).toLowerCase().includes(q)
-    );
-    render(filtered);
+    App.notify.info('Uploading attachment...');
+    try {
+      // 1. Get Signature
+      const sigRes = await App.api.get('/uploads/signature');
+      const { signature, timestamp, folder, apiKey, cloudName } = sigRes.data;
+
+      // 2. Direct Upload to Cloudinary
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('api_key', apiKey);
+      formData.append('timestamp', timestamp);
+      formData.append('signature', signature);
+      formData.append('folder', folder);
+
+      const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
+        method: 'POST',
+        body: formData
+      });
+      const cloudData = await cloudRes.json();
+      
+      if (cloudData.secure_url) {
+        document.getElementById('attachmentUrl').value = cloudData.secure_url;
+        App.notify.success('Attachment uploaded!');
+      } else {
+        App.notify.error('Upload failed');
+      }
+    } catch (err) {
+      App.notify.error('Upload error: ' + err.message);
+    }
   });
 
   requestForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     await App.form.submit(requestForm, async (data) => {
-      await new Promise(r => setTimeout(r, 800)); // fake delay
-      App.notify.success('Request sent! We will contact you soon.');
-      requestForm.reset();
+      const res = await App.api.post('/innovations/requests', data);
+      App.notify.success('Request submitted successfully!');
+      App.modal.close('requestModal');
+      setTimeout(() => window.location.href = '/account/innovations', 1000);
     });
   });
 
-  window.addEventListener('langChanged', () => render(mockInnovations));
+  searchInput.addEventListener('input', (e) => {
+    clearTimeout(window.searchTimeout);
+    window.searchTimeout = setTimeout(() => loadInnovations(e.target.value), 300);
+  });
+
+  loadInnovations();
 })();

@@ -391,3 +391,6 @@ textarea.field__input { resize: vertical; min-height: 80px; }
   flex-direction: column;
   flex: 1;
 }
+
+/* Image overflow fix for details */
+.detail-image { width:100%; height:400px; object-fit:cover; border-radius:var(--radius-xl); }

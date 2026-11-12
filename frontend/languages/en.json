@@ -93,5 +93,15 @@
   "request_custom_title": "Request Custom Project",
   "request_custom_sub": "Need something built? Tell us below.",
   "project_desc_label": "Project Description",
-  "request_btn": "Submit Request"
+  "request_btn": "Submit Request",
+  "enroll_title": "Enroll in Course",
+  "enroll_sub": "Enter your details to complete payment.",
+  "pay_btn": "Pay Now with Paystack",
+  "checkout_title": "Checkout",
+  "address_label": "Delivery Address",
+  "total_label": "Total",
+  "budget_label": "Estimated Budget",
+  "submit_request_btn": "Submit Project Request",
+  "want_similar": "Want a similar project?",
+  "want_similar_sub": "Contact us to build a custom solution for your needs."
 }

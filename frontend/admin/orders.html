@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Orders — OpenTech</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="/css/base.css" />
+  <link rel="stylesheet" href="/css/layout.css" />
+  <link rel="stylesheet" href="/css/components.css" />
+  <link rel="stylesheet" href="/css/pages.css" />
+</head>
+<body>
+  <div class="admin-page-content">
+    <h1 class="section__title mb-4">Manage Orders</h1>
+    <div class="card p-4" style="overflow-x:auto;">
+      <table style="width:100%; text-align:left; border-collapse:collapse;">
+        <thead>
+          <tr style="border-bottom:1px solid var(--color-border); color:var(--color-muted); font-size:12px;">
+            <th class="p-3">Order ID</th>
+            <th class="p-3">Customer</th>
+            <th class="p-3">Items</th>
+            <th class="p-3">Total</th>
+            <th class="p-3">Payment</th>
+            <th class="p-3">Delivery</th>
+            <th class="p-3">Action</th>
+          </tr>
+        </thead>
+        <tbody id="ordersTbody">
+          <tr><td colspan="7" class="p-4 text-center"><i class="fa-solid fa-spinner fa-spin"></i></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <script src="/js/core.js"></script>
+  <script src="/js/admin.js"></script>
+  <script>
+    async function loadOrders() {
+      const tbody = document.getElementById('ordersTbody');
+      try {
+        const res = await App.api.get('/admin/orders');
+        if (res.data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-muted">No orders yet</td></tr>';
+          return;
+        }
+        tbody.innerHTML = res.data.map(o => `
+          <tr style="border-bottom:1px solid var(--color-border); font-size:14px;">
+            <td class="p-3 text-white font-bold">#${o.orderNumber}</td>
+            <td class="p-3"><div class="text-white">${o.user?.fullName || 'N/A'}</div><div class="text-muted text-xs">${o.user?.email}</div></td>
+            <td class="p-3 text-white">${o.items.length} item(s)</td>
+            <td class="p-3 text-gold font-bold">${App.naira(o.totalAmount)}</td>
+            <td class="p-3"><span class="badge ${o.paymentStatus === 'paid' ? 'badge--success' : 'badge--muted'}">${o.paymentStatus}</span></td>
+            <td class="p-3">
+              <select onchange="updateOrderStatus('${o._id}', this.value)" class="field__input" style="padding:4px; font-size:12px;">
+                <option value="pending" ${o.deliveryStatus==='pending'?'selected':''}>Pending</option>
+                <option value="processing" ${o.deliveryStatus==='processing'?'selected':''}>Processing</option>
+                <option value="shipped" ${o.deliveryStatus==='shipped'?'selected':''}>Shipped</option>
+                <option value="delivered" ${o.deliveryStatus==='delivered'?'selected':''}>Delivered</option>
+                <option value="cancelled" ${o.deliveryStatus==='cancelled'?'selected':''}>Cancelled</option>
+              </select>
+            </td>
+            <td class="p-3"><button class="btn btn--primary btn--sm" onclick="App.notify.success('Customer notified')">Notify</button></td>
+          </tr>
+        `).join('');
+      } catch (err) { tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-error">Failed to load orders</td></tr>'; }
+    }
+
+    async function updateOrderStatus(id, status) {
+      try {
+        await App.api.put(`/admin/orders/${id}`, { deliveryStatus: status });
+        App.notify.success('Order updated');
+      } catch (err) { App.notify.error('Update failed'); }
+    }
+
+    loadOrders();
+  </script>
+</body>
+</html>

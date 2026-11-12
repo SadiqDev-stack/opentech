@@ -14,8 +14,17 @@ if (env.smtp.host && env.smtp.user) {
 
 export async function sendEmail({ to, subject, text, html }) {
   if (!transporter) {
-    console.log(`[email-mock] To: ${to} | Subject: ${subject} | Text: ${text}`);
-    return;
+    console.log(`[email-mock] To: ${to} | Subject: ${subject}`);
+    return { success: true, mock: true };
   }
-  await transporter.sendMail({ from: env.smtp.from, to, subject, text, html });
+  try {
+    const info = await transporter.sendMail({
+      from: env.smtp.from,
+      to, subject, text, html
+    });
+    return { success: true, info };
+  } catch (err) {
+    console.error('[email] Failed:', err.message);
+    throw err;
+  }
 }

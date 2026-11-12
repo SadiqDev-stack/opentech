@@ -6,7 +6,10 @@
   "main": "backend/server.js",
   "scripts": {
     "start": "node backend/server.js",
-    "dev": "node --watch backend/server.js"
+    "dev": "node --watch backend/server.js",
+    "seed": "node backend/seed-admin.js && node backend/seed-courses.js && node backend/seed-products.js && node backend/seed-innovations.js",
+    "build": "echo \"No build step required for vanilla JS\"",
+    "start:prod": "NODE_ENV=production node backend/server.js"
   },
   "engines": {
     "node": ">=18"
