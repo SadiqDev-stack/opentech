@@ -11,78 +11,43 @@
   <link rel="stylesheet" href="/css/pages.css" />
 </head>
 <body>
-  <div class="admin-page-content">
+  <div>
     <h1 class="section__title mb-4">System Settings</h1>
-    
     <div class="grid-2 mb-6">
-      <div class="card p-4 flex justify-between items-center" id="card-paystack">
-        <div><div class="font-bold text-white">Paystack Gateway</div><div class="text-muted text-xs">Card & Bank Transfer</div></div>
-        <span class="badge badge--muted">Checking...</span>
-      </div>
-      <div class="card p-4 flex justify-between items-center" id="card-cloudinary">
-        <div><div class="font-bold text-white">Cloudinary CDN</div><div class="text-muted text-xs">Secure Media Uploads</div></div>
-        <span class="badge badge--muted">Checking...</span>
-      </div>
-      <div class="card p-4 flex justify-between items-center" id="card-sms">
-        <div><div class="font-bold text-white">eBulkSMS</div><div class="text-muted text-xs">SMS Notifications</div></div>
-        <span class="badge badge--muted">Checking...</span>
-      </div>
-      <div class="card p-4 flex justify-between items-center" id="card-smtp">
-        <div><div class="font-bold text-white">Nodemailer / SMTP</div><div class="text-muted text-xs">Transactional Emails</div></div>
-        <span class="badge badge--muted">Checking...</span>
-      </div>
+      <div class="card p-4 flex justify-between items-center" id="card-paystack"><div><div class="font-bold text-white">Paystack Gateway</div><div class="text-muted text-xs">Card & Bank Transfer</div></div><span class="badge badge--muted">Checking...</span></div>
+      <div class="card p-4 flex justify-between items-center" id="card-cloudinary"><div><div class="font-bold text-white">Cloudinary CDN</div><div class="text-muted text-xs">Secure Media Uploads</div></div><span class="badge badge--muted">Checking...</span></div>
+      <div class="card p-4 flex justify-between items-center" id="card-sms"><div><div class="font-bold text-white">eBulkSMS</div><div class="text-muted text-xs">SMS Notifications</div></div><span class="badge badge--muted">Checking...</span></div>
+      <div class="card p-4 flex justify-between items-center" id="card-smtp"><div><div class="font-bold text-white">Nodemailer / SMTP</div><div class="text-muted text-xs">Transactional Emails</div></div><span class="badge badge--muted">Checking...</span></div>
     </div>
-
     <div class="card p-5" style="max-width:500px;">
       <h3 class="font-bold text-white mb-2">Maintenance Mode</h3>
-      <p class="text-muted text-sm mb-4">When enabled, public visitors will see a maintenance page. Admins can still log in.</p>
-      <div class="flex items-center gap-3">
-        <button id="maintenanceBtn" class="btn btn--outline" onclick="toggleMaintenance()">Toggle</button>
-        <span id="maintenanceStatus" class="badge badge--muted">Loading...</span>
-      </div>
+      <p class="text-muted text-sm mb-4">When enabled, public visitors will see a maintenance page.</p>
+      <div class="flex items-center gap-3"><button id="maintenanceBtn" class="btn btn--outline" onclick="toggleMaintenance()">Toggle</button><span id="maintenanceStatus" class="badge badge--muted">Loading...</span></div>
     </div>
   </div>
-
   <script src="/js/core.js"></script>
-  <script src="/js/admin.js"></script>
   <script>
     (async function() {
-      // Load Service Statuses
       try {
         const res = await App.api.get('/settings/status');
         const s = res.data;
-        const setBadge = (id, configured) => {
-          const el = document.querySelector(`#card-${id} .badge`);
-          el.className = `badge ${configured ? 'badge--success' : 'badge--error'}`;
-          el.textContent = configured ? 'Configured' : 'Not Configured';
-        };
-        setBadge('paystack', s.paystack);
-        setBadge('cloudinary', s.cloudinary);
-        setBadge('sms', s.ebulkSms);
-        setBadge('smtp', s.smtp);
-      } catch (err) { App.notify.error('Failed to load statuses'); }
-
-      // Load Maintenance Mode
+        const setBadge = (id, ok) => { const el = document.querySelector(`#card-${id} .badge`); el.className = `badge ${ok ? 'badge--success' : 'badge--error'}`; el.textContent = ok ? 'Configured' : 'Not Configured'; };
+        setBadge('paystack', s.paystack); setBadge('cloudinary', s.cloudinary); setBadge('sms', s.ebulksms); setBadge('smtp', s.smtp);
+      } catch {}
       try {
         const res = await App.api.get('/settings');
-        const statusEl = document.getElementById('maintenanceStatus');
-        if (res.data.maintenanceMode) {
-          statusEl.className = 'badge badge--error'; statusEl.textContent = 'ON';
-        } else {
-          statusEl.className = 'badge badge--success'; statusEl.textContent = 'OFF';
-        }
-      } catch (err) { App.notify.error('Failed to load settings'); }
+        const el = document.getElementById('maintenanceStatus');
+        if (res.data.maintenanceMode) { el.className = 'badge badge--error'; el.textContent = 'ON'; } else { el.className = 'badge badge--success'; el.textContent = 'OFF'; }
+      } catch {}
     })();
-
     async function toggleMaintenance() {
       try {
         const res = await App.api.get('/settings');
-        const newMode = !res.data.maintenanceMode;
-        await App.api.put('/settings', { maintenanceMode: newMode });
-        App.notify.success(`Maintenance mode ${newMode ? 'enabled' : 'disabled'}`);
-        location.reload();
-      } catch (err) { App.notify.error('Update failed'); }
+        await App.api.put('/settings', { maintenanceMode: !res.data.maintenanceMode });
+        App.notify.success('Updated'); location.reload();
+      } catch { App.notify.error('Failed'); }
     }
   </script>
+  <script src="/js/admin.js"></script>
 </body>
 </html>

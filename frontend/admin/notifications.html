@@ -1,47 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Notifications — OpenTech</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <link rel="stylesheet" href="/css/base.css" />
-  <link rel="stylesheet" href="/css/layout.css" />
-  <link rel="stylesheet" href="/css/components.css" />
-  <link rel="stylesheet" href="/css/pages.css" />
+  <link rel="stylesheet" href="/css/base.css" /><link rel="stylesheet" href="/css/layout.css" /><link rel="stylesheet" href="/css/components.css" /><link rel="stylesheet" href="/css/pages.css" />
 </head>
 <body>
-  <div class="admin-page-content">
-    <h1 class="section__title mb-4">Send Notifications</h1>
+  <div>
+    <h1 class="section__title mb-4">Send Broadcast</h1>
     <div class="card p-5" style="max-width:600px;">
+      <p class="text-muted text-sm mb-4"><i class="fa-solid fa-info-circle text-gold"></i> Safe limit: Max 100 notifications per day to prevent spam flags and service bans.</p>
       <form id="notifyForm" class="flex-col gap-3">
-        <div class="field">
-          <label class="field__label">Channel</label>
-          <select name="channel" class="field__input">
-            <option value="sms">eBulkSMS</option>
-            <option value="email">Nodemailer (Email)</option>
-          </select>
-        </div>
-        <div class="field">
-          <label class="field__label">Recipient (Email or Phone)</label>
-          <input type="text" name="recipient" class="field__input" required placeholder="All users or specific address">
-        </div>
-        <div class="field">
-          <label class="field__label">Message</label>
-          <textarea name="message" class="field__input" rows="4" required></textarea>
-        </div>
+        <div class="field"><label class="field__label">Channel</label><select id="channel" class="field__input"><option value="email">Email (Nodemailer)</option><option value="sms">SMS (eBulkSMS)</option></select></div>
+        <div class="field"><label class="field__label">Message</label><textarea id="broadcastMessage" class="field__input" rows="4" required></textarea></div>
         <button type="submit" class="btn btn--primary">Send Broadcast</button>
       </form>
     </div>
   </div>
   <script src="/js/core.js"></script>
-  <script src="/js/admin.js"></script>
   <script>
-    document.getElementById('notifyForm').addEventListener('submit', (e) => {
+    document.getElementById('notifyForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      App.notify.success('Broadcast sent successfully (mock)');
-      e.target.reset();
+      await App.form.submit(e.target, async () => {
+        const res = await App.api.post('/admin/broadcast', {
+          channel: document.getElementById('channel').value,
+          message: document.getElementById('broadcastMessage').value
+        });
+        App.notify.success(res.message);
+        document.getElementById('broadcastMessage').value = '';
+      });
     });
   </script>
+  <script src="/js/admin.js"></script>
 </body>
 </html>

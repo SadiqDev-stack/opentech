@@ -2,16 +2,23 @@ import express from 'express';
 import Product from '../models/Product.js';
 import withDB from '../middleware/db.js';
 import { requireAdmin } from '../middleware/auth.js';
+import { slugify } from '../utils/helpers.js';
 
 const router = express.Router();
 
 router.get('/', withDB(async (req, res, next) => {
   try {
-    const { search } = req.query;
+    const { search, page = 1, limit = 9 } = req.query;
     let query = { archived: false };
     if (search) query.$or = [{ 'name.en': { $regex: search, $options: 'i' } }, { 'name.ha': { $regex: search, $options: 'i' } }];
-    const products = await Product.find(query).sort({ createdAt: -1 });
-    res.json({ success: true, data: products });
+
+    const total = await Product.countDocuments(query);
+    const products = await Product.find(query)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(Number(limit));
+
+    res.json({ success: true, data: products, meta: { total, page: Number(page), pages: Math.ceil(total / limit) } });
   } catch (err) { next(err); }
 }));
 

@@ -1,24 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Innovations — OpenTech</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <link rel="stylesheet" href="/css/base.css" />
-  <link rel="stylesheet" href="/css/layout.css" />
-  <link rel="stylesheet" href="/css/components.css" />
-  <link rel="stylesheet" href="/css/pages.css" />
+  <link rel="stylesheet" href="/css/base.css" /><link rel="stylesheet" href="/css/layout.css" /><link rel="stylesheet" href="/css/components.css" /><link rel="stylesheet" href="/css/pages.css" />
 </head>
 <body>
-  <div class="admin-page-content">
-    <h1 class="section__title mb-4">Innovation Requests</h1>
-    <div id="requestsList" class="flex-col gap-4">
-      <div class="skeleton skeleton--card"></div>
+  <div>
+    <div class="flex justify-between items-center mb-4">
+      <h1 class="section__title mb-0">Innovations & Requests</h1>
+      <button class="btn btn--primary btn--sm" data-modal-open="innovationModal"><i class="fa-solid fa-plus"></i> Publish Innovation</button>
+    </div>
+    <div id="requestsList" class="flex-col gap-4"><div class="skeleton skeleton--card"></div></div>
+  </div>
+
+  <div id="innovationModal" class="modal">
+    <div class="modal__sheet">
+      <div class="modal__head"><h3 class="modal__title">Publish Innovation</h3><button class="modal__close" data-modal-close="innovationModal"><i class="fa-solid fa-xmark"></i></button></div>
+      <form id="innovationForm" class="flex-col gap-3">
+        <div class="field"><label class="field__label">Title (English)</label><input type="text" name="titleEn" class="field__input" required></div>
+        <div class="field"><label class="field__label">Title (Hausa)</label><input type="text" name="titleHa" class="field__input" required></div>
+        <div class="field"><label class="field__label">Desc (English)</label><textarea name="descEn" class="field__input" required></textarea></div>
+        <div class="field"><label class="field__label">Desc (Hausa)</label><textarea name="descHa" class="field__input" required></textarea></div>
+        <div class="field"><label class="field__label">Category</label><input type="text" name="category" class="field__input" placeholder="e.g. Solar, IoT" required></div>
+        <div class="field"><label class="field__label">Image URL</label><input type="url" name="image" class="field__input" required></div>
+        <div class="field"><label class="field__label">Or Upload Image</label><input type="file" id="imageUpload" class="field__input" accept="image/*"></div>
+        <button type="submit" class="btn btn--primary w-full mt-2">Publish</button>
+      </form>
     </div>
   </div>
+
   <script src="/js/core.js"></script>
-  <script src="/js/admin.js"></script>
   <script>
     async function loadRequests() {
       const container = document.getElementById('requestsList');
@@ -41,21 +54,54 @@
             </div>
             <p class="text-white text-sm mb-2">${r.description}</p>
             <div class="flex gap-2">
-              <button class="btn btn--primary btn--sm" onclick="App.notify.success('SMS Sent')">Send Quote SMS</button>
+              <button class="btn btn--outline btn--sm" onclick="archiveInnovation('${r._id}')" style="color:var(--color-error-text);">Archive</button>
             </div>
           </div>
         `).join('');
-      } catch (err) { container.innerHTML = '<p class="text-error">Failed to load requests</p>'; }
+      } catch (err) { container.innerHTML = '<p class="text-error">Failed to load</p>'; }
     }
 
     async function updateRequestStatus(id, status) {
-      try {
-        await App.api.put(`/admin/requests/${id}`, { status });
-        App.notify.success('Request status updated');
-      } catch (err) { App.notify.error('Update failed'); }
+      try { await App.api.put('/admin/requests/' + id, { status }); App.notify.success('Status updated'); } catch { App.notify.error('Failed'); }
     }
+
+    async function archiveInnovation(id) {
+      if (!confirm('Archive this innovation?')) return;
+      try { await App.api.del('/admin/innovations/' + id); App.notify.success('Archived'); loadRequests(); } catch { App.notify.error('Failed'); }
+    }
+
+    document.getElementById('imageUpload').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        App.notify.info('Uploading...');
+        try {
+          const sigRes = await App.api.get('/uploads/signature');
+          const { signature, timestamp, folder, apiKey, cloudName } = sigRes.data;
+          const fd = new FormData();
+          fd.append('file', file); fd.append('api_key', apiKey); fd.append('timestamp', timestamp); fd.append('signature', signature); fd.append('folder', folder);
+          const cloudRes = await fetch('https://api.cloudinary.com/v1_1/' + cloudName + '/auto/upload', { method: 'POST', body: fd });
+          const data = await cloudRes.json();
+          if (data.secure_url) { document.querySelector('#innovationForm [name="image"]').value = data.secure_url; App.notify.success('Uploaded!'); }
+        } catch(err) { App.notify.error('Upload failed'); }
+      }
+    });
+
+    document.getElementById('innovationForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await App.form.submit(e.target, async (data) => {
+        await App.api.post('/admin/innovations', {
+          title: { en: data.titleEn, ha: data.titleHa },
+          description: { en: data.descEn, ha: data.descHa },
+          category: data.category, image: data.image
+        });
+        App.notify.success('Innovation published');
+        App.modal.close('innovationModal');
+        loadRequests();
+      });
+    });
 
     loadRequests();
   </script>
+  <script src="/js/admin.js"></script>
 </body>
 </html>

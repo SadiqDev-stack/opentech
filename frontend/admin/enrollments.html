@@ -11,26 +11,16 @@
   <link rel="stylesheet" href="/css/pages.css" />
 </head>
 <body>
-  <div class="admin-page-content">
+  <div>
     <h1 class="section__title mb-4">Course Enrollments</h1>
     <div class="card p-4" style="overflow-x:auto;">
       <table style="width:100%; text-align:left; border-collapse:collapse;">
-        <thead>
-          <tr style="border-bottom:1px solid var(--color-border); color:var(--color-muted); font-size:12px;">
-            <th class="p-3">Student</th>
-            <th class="p-3">Course</th>
-            <th class="p-3">Status</th>
-            <th class="p-3">Date</th>
-          </tr>
-        </thead>
-        <tbody id="enrollmentsTbody">
-          <tr><td colspan="4" class="p-4 text-center"><i class="fa-solid fa-spinner fa-spin"></i></td></tr>
-        </tbody>
+        <thead><tr style="border-bottom:1px solid var(--color-border); color:var(--color-muted); font-size:12px;"><th class="p-3">Student</th><th class="p-3">Course</th><th class="p-3">Status</th><th class="p-3">Date</th></tr></thead>
+        <tbody id="enrollmentsTbody"><tr><td colspan="4" class="p-4 text-center"><i class="fa-solid fa-spinner fa-spin"></i></td></tr></tbody>
       </table>
     </div>
   </div>
   <script src="/js/core.js"></script>
-  <script src="/js/admin.js"></script>
   <script>
     (async function() {
       const tbody = document.getElementById('enrollmentsTbody');
@@ -48,5 +38,6 @@
       } catch (err) { tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-error">Failed to load</td></tr>'; }
     })();
   </script>
+  <script src="/js/admin.js"></script>
 </body>
 </html>

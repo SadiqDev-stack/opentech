@@ -1,61 +1,126 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Products — OpenTech</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <link rel="stylesheet" href="/css/base.css" />
-  <link rel="stylesheet" href="/css/layout.css" />
-  <link rel="stylesheet" href="/css/components.css" />
-  <link rel="stylesheet" href="/css/pages.css" />
+  <link rel="stylesheet" href="/css/base.css" /><link rel="stylesheet" href="/css/layout.css" /><link rel="stylesheet" href="/css/components.css" /><link rel="stylesheet" href="/css/pages.css" />
 </head>
 <body>
-  <div class="admin-page-content">
+  <div>
     <div class="flex justify-between items-center mb-4">
       <h1 class="section__title mb-0">Manage Products</h1>
-      <button class="btn btn--primary btn--sm" onclick="App.notify.info('Create product modal')"><i class="fa-solid fa-plus"></i> Add Product</button>
+      <button class="btn btn--primary btn--sm" onclick="openProductModal()"><i class="fa-solid fa-plus"></i> Add Product</button>
     </div>
     <div class="card p-4" style="overflow-x:auto;">
       <table style="width:100%; text-align:left; border-collapse:collapse;">
-        <thead>
-          <tr style="border-bottom:1px solid var(--color-border); color:var(--color-muted); font-size:12px;">
-            <th class="p-3">Product</th>
-            <th class="p-3">Price</th>
-            <th class="p-3">Stock</th>
-            <th class="p-3">Status</th>
-          </tr>
-        </thead>
-        <tbody id="productsTbody">
-          <tr><td colspan="4" class="p-4 text-center"><i class="fa-solid fa-spinner fa-spin"></i></td></tr>
-        </tbody>
+        <thead><tr style="border-bottom:1px solid var(--color-border); color:var(--color-muted); font-size:12px;"><th class="p-3">Product</th><th class="p-3">Price</th><th class="p-3">Stock</th><th class="p-3">Status</th><th class="p-3">Actions</th></tr></thead>
+        <tbody id="productsTbody"><tr><td colspan="5" class="p-4 text-center"><i class="fa-solid fa-spinner fa-spin"></i></td></tr></tbody>
       </table>
     </div>
   </div>
+
+  <div id="productModal" class="modal">
+    <div class="modal__sheet">
+      <div class="modal__head"><h3 class="modal__title" id="productModalTitle">Add Product</h3><button class="modal__close" data-modal-close="productModal"><i class="fa-solid fa-xmark"></i></button></div>
+      <form id="productForm" class="flex-col gap-3">
+        <input type="hidden" name="id" id="productId" />
+        <div class="field"><label class="field__label">Name (English)</label><input type="text" name="nameEn" class="field__input" required></div>
+        <div class="field"><label class="field__label">Name (Hausa)</label><input type="text" name="nameHa" class="field__input" required></div>
+        <div class="field"><label class="field__label">Desc (English)</label><textarea name="descEn" class="field__input" required></textarea></div>
+        <div class="field"><label class="field__label">Desc (Hausa)</label><textarea name="descHa" class="field__input" required></textarea></div>
+        <div class="field"><label class="field__label">Price (₦)</label><input type="number" name="price" class="field__input" required></div>
+        <div class="field"><label class="field__label">Stock</label><input type="number" name="stock" class="field__input" required></div>
+        <div class="field"><label class="field__label">Image URL</label><input type="url" name="image" class="field__input" required></div>
+        <div class="field"><label class="field__label">Or Upload Image</label><input type="file" id="imageUpload" class="field__input" accept="image/*"></div>
+        <button type="submit" class="btn btn--primary w-full mt-2">Save Product</button>
+      </form>
+    </div>
+  </div>
+
   <script src="/js/core.js"></script>
-  <script src="/js/admin.js"></script>
   <script>
-    (async function() {
+    let allProducts = [];
+    async function loadProducts() {
       const tbody = document.getElementById('productsTbody');
       try {
-        const res = await App.api.get('/products');
-        if (res.data.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-muted">No products yet</td></tr>'; return; }
-        tbody.innerHTML = res.data.map(p => `
+        const res = await App.api.get('/products?limit=100');
+        allProducts = res.data;
+        if (allProducts.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-muted">No products yet</td></tr>'; return; }
+        tbody.innerHTML = allProducts.map(p => `
           <tr style="border-bottom:1px solid var(--color-border); font-size:14px;">
-            <td class="p-3 flex items-center gap-3">
-              <img src="${p.image}" style="width:40px; height:40px; border-radius:4px; object-fit:cover;">
-              <span class="text-white font-bold">${p.name.en}</span>
-            </td>
+            <td class="p-3 flex items-center gap-3"><img src="${p.image}" style="width:40px; height:40px; border-radius:4px; object-fit:cover;"><span class="text-white font-bold">${p.name.en}</span></td>
             <td class="p-3 text-gold font-bold">${App.naira(p.price)}</td>
-            <td class="p-3">
-              <input type="number" value="${p.stock}" class="field__input" style="width:70px; padding:4px; font-size:12px;">
-              <button class="text-gold text-xs ml-2" onclick="App.notify.success('Stock saved')">Save</button>
-            </td>
+            <td class="p-3 text-white">${p.stock}</td>
             <td class="p-3"><span class="badge ${p.stock > 0 ? 'badge--success' : 'badge--error'}">${p.stock > 0 ? 'In Stock' : 'Out of Stock'}</span></td>
+            <td class="p-3">
+              <button class="btn btn--outline btn--sm" onclick="editProduct('${p._id}')">Edit</button>
+              <button class="btn btn--outline btn--sm" onclick="archiveProduct('${p._id}')" style="color:var(--color-error-text);"><i class="fa-solid fa-trash"></i></button>
+            </td>
           </tr>
         `).join('');
-      } catch (err) { tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-error">Failed to load</td></tr>'; }
-    })();
+      } catch (err) { tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-error">Failed to load</td></tr>'; }
+    }
+
+    function openProductModal() {
+      document.getElementById('productModalTitle').textContent = 'Add Product';
+      document.getElementById('productForm').reset();
+      document.getElementById('productId').value = '';
+      App.modal.open('productModal');
+    }
+
+    function editProduct(id) {
+      const p = allProducts.find(x => x._id === id);
+      if (!p) return;
+      document.getElementById('productModalTitle').textContent = 'Edit Product';
+      document.getElementById('productId').value = p._id;
+      document.querySelector('#productForm [name="nameEn"]').value = p.name.en;
+      document.querySelector('#productForm [name="nameHa"]').value = p.name.ha;
+      document.querySelector('#productForm [name="descEn"]').value = p.description.en;
+      document.querySelector('#productForm [name="descHa"]').value = p.description.ha;
+      document.querySelector('#productForm [name="price"]').value = p.price;
+      document.querySelector('#productForm [name="stock"]').value = p.stock;
+      document.querySelector('#productForm [name="image"]').value = p.image;
+      App.modal.open('productModal');
+    }
+
+    async function archiveProduct(id) {
+      if (!confirm('Archive this product?')) return;
+      try { await App.api.del('/admin/products/' + id); App.notify.success('Archived'); loadProducts(); } catch { App.notify.error('Failed'); }
+    }
+
+    document.getElementById('imageUpload').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        App.notify.info('Uploading...');
+        try {
+          const sigRes = await App.api.get('/uploads/signature');
+          const { signature, timestamp, folder, apiKey, cloudName } = sigRes.data;
+          const fd = new FormData();
+          fd.append('file', file); fd.append('api_key', apiKey); fd.append('timestamp', timestamp); fd.append('signature', signature); fd.append('folder', folder);
+          const cloudRes = await fetch('https://api.cloudinary.com/v1_1/' + cloudName + '/auto/upload', { method: 'POST', body: fd });
+          const data = await cloudRes.json();
+          if (data.secure_url) { document.querySelector('#productForm [name="image"]').value = data.secure_url; App.notify.success('Uploaded!'); }
+        } catch(err) { App.notify.error('Upload failed'); }
+      }
+    });
+
+    document.getElementById('productForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await App.form.submit(e.target, async (data) => {
+        const payload = {
+          name: { en: data.nameEn, ha: data.nameHa },
+          description: { en: data.descEn, ha: data.descHa },
+          price: Number(data.price), stock: Number(data.stock), image: data.image
+        };
+        if (data.id) await App.api.put('/admin/products/' + data.id, payload);
+        else await App.api.post('/admin/products', payload);
+        App.notify.success('Saved'); App.modal.close('productModal'); loadProducts();
+      });
+    });
+
+    loadProducts();
   </script>
+  <script src="/js/admin.js"></script>
 </body>
 </html>

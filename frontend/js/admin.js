@@ -1,12 +1,10 @@
 (async function () {
-  // Admin Guard
   const user = await App.auth.me();
   if (!user || user.role !== 'admin') {
     window.location.href = '/admin-login';
     return;
   }
 
-  // Inject Admin Sidebar
   const path = window.location.pathname;
   const navItems = [
     { href: '/admin', icon: 'fa-chart-pie', label: 'Dashboard' },
@@ -40,14 +38,25 @@
           <button class="btn btn--outline btn--sm w-full" style="color:var(--color-error-text);" onclick="App.auth.logout()">Logout</button>
         </div>
       </aside>
-      <main class="admin-content" id="adminContent" style="flex:1; padding:30px; background:var(--color-black);">
+      <main class="admin-content" id="adminContent" style="flex:1; padding:30px; background:var(--color-black); overflow-y:auto;">
         <!-- Page content injected here -->
       </main>
     </div>
   `;
 
-  // Move body content into the main area
-  const bodyContent = document.body.innerHTML;
+  // Grab the original content and move it into the main area
+  const originalContent = document.body.innerHTML;
   document.body.innerHTML = sidebarHTML;
-  document.getElementById('adminContent').innerHTML = bodyContent;
+  
+  const contentContainer = document.getElementById('adminContent');
+  contentContainer.innerHTML = originalContent;
+
+  // Re-execute any scripts inside the moved content
+  const scripts = contentContainer.querySelectorAll('script');
+  scripts.forEach(oldScript => {
+    const newScript = document.createElement('script');
+    Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+    newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+    oldScript.parentNode.replaceChild(newScript, oldScript);
+  });
 })();

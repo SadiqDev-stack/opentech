@@ -11,38 +11,26 @@
   <link rel="stylesheet" href="/css/pages.css" />
 </head>
 <body>
-  <div class="admin-page-content">
+  <div>
     <h1 class="section__title mb-4">Manage Orders</h1>
     <div class="card p-4" style="overflow-x:auto;">
       <table style="width:100%; text-align:left; border-collapse:collapse;">
         <thead>
           <tr style="border-bottom:1px solid var(--color-border); color:var(--color-muted); font-size:12px;">
-            <th class="p-3">Order ID</th>
-            <th class="p-3">Customer</th>
-            <th class="p-3">Items</th>
-            <th class="p-3">Total</th>
-            <th class="p-3">Payment</th>
-            <th class="p-3">Delivery</th>
-            <th class="p-3">Action</th>
+            <th class="p-3">Order ID</th><th class="p-3">Customer</th><th class="p-3">Items</th><th class="p-3">Total</th><th class="p-3">Payment</th><th class="p-3">Delivery</th>
           </tr>
         </thead>
-        <tbody id="ordersTbody">
-          <tr><td colspan="7" class="p-4 text-center"><i class="fa-solid fa-spinner fa-spin"></i></td></tr>
-        </tbody>
+        <tbody id="ordersTbody"><tr><td colspan="6" class="p-4 text-center"><i class="fa-solid fa-spinner fa-spin"></i></td></tr></tbody>
       </table>
     </div>
   </div>
   <script src="/js/core.js"></script>
-  <script src="/js/admin.js"></script>
   <script>
     async function loadOrders() {
       const tbody = document.getElementById('ordersTbody');
       try {
         const res = await App.api.get('/admin/orders');
-        if (res.data.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-muted">No orders yet</td></tr>';
-          return;
-        }
+        if (res.data.length === 0) { tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-muted">No orders yet</td></tr>'; return; }
         tbody.innerHTML = res.data.map(o => `
           <tr style="border-bottom:1px solid var(--color-border); font-size:14px;">
             <td class="p-3 text-white font-bold">#${o.orderNumber}</td>
@@ -56,23 +44,17 @@
                 <option value="processing" ${o.deliveryStatus==='processing'?'selected':''}>Processing</option>
                 <option value="shipped" ${o.deliveryStatus==='shipped'?'selected':''}>Shipped</option>
                 <option value="delivered" ${o.deliveryStatus==='delivered'?'selected':''}>Delivered</option>
-                <option value="cancelled" ${o.deliveryStatus==='cancelled'?'selected':''}>Cancelled</option>
               </select>
             </td>
-            <td class="p-3"><button class="btn btn--primary btn--sm" onclick="App.notify.success('Customer notified')">Notify</button></td>
           </tr>
         `).join('');
-      } catch (err) { tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-error">Failed to load orders</td></tr>'; }
+      } catch (err) { tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-error">Failed to load</td></tr>'; }
     }
-
     async function updateOrderStatus(id, status) {
-      try {
-        await App.api.put(`/admin/orders/${id}`, { deliveryStatus: status });
-        App.notify.success('Order updated');
-      } catch (err) { App.notify.error('Update failed'); }
+      try { await App.api.put(`/admin/orders/${id}`, { deliveryStatus: status }); App.notify.success('Order updated'); } catch { App.notify.error('Failed'); }
     }
-
     loadOrders();
   </script>
+  <script src="/js/admin.js"></script>
 </body>
 </html>

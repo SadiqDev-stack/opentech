@@ -1,85 +1,123 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Courses — OpenTech</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <link rel="stylesheet" href="/css/base.css" />
-  <link rel="stylesheet" href="/css/layout.css" />
-  <link rel="stylesheet" href="/css/components.css" />
-  <link rel="stylesheet" href="/css/pages.css" />
+  <link rel="stylesheet" href="/css/base.css" /><link rel="stylesheet" href="/css/layout.css" /><link rel="stylesheet" href="/css/components.css" /><link rel="stylesheet" href="/css/pages.css" />
 </head>
 <body>
-  <div class="admin-page-content">
+  <div>
     <div class="flex justify-between items-center mb-4">
       <h1 class="section__title mb-0">Manage Courses</h1>
-      <button class="btn btn--primary btn--sm" data-modal-open="courseModal"><i class="fa-solid fa-plus"></i> Add Course</button>
+      <button class="btn btn--primary btn--sm" onclick="openForm()"><i class="fa-solid fa-plus"></i> Add Course</button>
     </div>
-    <div id="coursesGrid" class="grid-3">
-      <div class="skeleton skeleton--card"></div>
-    </div>
+    <div id="coursesGrid" class="grid-3"><div class="skeleton skeleton--card"></div></div>
   </div>
-
-  <!-- Create/Edit Course Modal -->
   <div id="courseModal" class="modal">
     <div class="modal__sheet">
-      <div class="modal__head"><h3 class="modal__title">Create Course</h3><button class="modal__close" data-modal-close="courseModal"><i class="fa-solid fa-xmark"></i></button></div>
+      <div class="modal__head"><h3 class="modal__title" id="courseModalTitle">Add Course</h3><button class="modal__close" data-modal-close="courseModal"><i class="fa-solid fa-xmark"></i></button></div>
       <form id="courseForm" class="flex-col gap-3">
-        <div class="field"><label class="field__label">Title (English)</label><input type="text" name="titleEn" class="field__input" required></div>
-        <div class="field"><label class="field__label">Title (Hausa)</label><input type="text" name="titleHa" class="field__input" required></div>
-        <div class="field"><label class="field__label">Description (English)</label><textarea name="descEn" class="field__input" required></textarea></div>
-        <div class="field"><label class="field__label">Description (Hausa)</label><textarea name="descHa" class="field__input" required></textarea></div>
-        <div class="field"><label class="field__label">Price (₦)</label><input type="number" name="price" class="field__input" required></div>
-        <div class="field"><label class="field__label">Duration</label><input type="text" name="duration" class="field__input" placeholder="e.g. 6 Weeks" required></div>
-        <div class="field"><label class="field__label">Image URL</label><input type="url" name="image" class="field__input" required></div>
-        <div class="field"><label class="field__label">Telegram Link</label><input type="url" name="telegramLink" class="field__input"></div>
+        <input type="hidden" id="courseId" />
+        <div class="field"><label class="field__label">Title (English)</label><input type="text" id="titleEn" class="field__input" required></div>
+        <div class="field"><label class="field__label">Title (Hausa)</label><input type="text" id="titleHa" class="field__input" required></div>
+        <div class="field"><label class="field__label">Desc (English)</label><textarea id="descEn" class="field__input" required></textarea></div>
+        <div class="field"><label class="field__label">Desc (Hausa)</label><textarea id="descHa" class="field__input" required></textarea></div>
+        <div class="field"><label class="field__label">Price (₦)</label><input type="number" id="price" class="field__input" required></div>
+        <div class="field"><label class="field__label">Duration</label><input type="text" id="duration" class="field__input" placeholder="6 Weeks" required></div>
+        <div class="field"><label class="field__label">Image URL</label><input type="url" id="image" class="field__input" required></div>
+        <div class="field"><label class="field__label">Or Upload Image</label><input type="file" id="imageUpload" class="field__input" accept="image/*"></div>
+        <div class="field"><label class="field__label">Telegram Link</label><input type="url" id="telegramLink" class="field__input"></div>
         <button type="submit" class="btn btn--primary w-full mt-2">Save Course</button>
       </form>
     </div>
   </div>
-
   <script src="/js/core.js"></script>
-  <script src="/js/admin.js"></script>
   <script>
+    let allCourses = [];
     async function loadCourses() {
       const grid = document.getElementById('coursesGrid');
       try {
-        const res = await App.api.get('/courses');
-        if (res.data.length === 0) { grid.innerHTML = App.render.empty('fa-graduation-cap', 'No courses yet'); return; }
-        grid.innerHTML = res.data.map(c => `
+        const res = await App.api.get('/courses?limit=100');
+        allCourses = res.data;
+        if (allCourses.length === 0) { grid.innerHTML = App.render.empty('fa-graduation-cap', 'No courses yet'); return; }
+        grid.innerHTML = allCourses.map(c => `
           <div class="card p-4">
             <img src="${c.image}" style="width:100%; height:120px; object-fit:cover; border-radius:8px; margin-bottom:12px;">
             <h3 class="font-bold text-white mb-1">${c.title.en}</h3>
             <div class="flex justify-between text-sm mt-2"><span class="text-muted">Price:</span><span class="text-gold font-bold">${App.naira(c.price)}</span></div>
             <div class="flex gap-2 mt-4">
-              <button class="btn btn--outline btn--sm w-full" onclick="App.notify.info('Link copied')"><i class="fa-solid fa-link"></i> Copy</button>
-              <button class="btn btn--primary btn--sm w-full">Edit</button>
+              <button class="btn btn--outline btn--sm w-full" onclick="navigator.clipboard.writeText('${location.origin}/course/${c.slug}'); App.notify.success('Link Copied')"><i class="fa-solid fa-link"></i></button>
+              <button class="btn btn--primary btn--sm w-full" onclick="editCourse('${c._id}')">Edit</button>
+              <button class="btn btn--outline btn--sm" onclick="archiveCourse('${c._id}')" style="color:var(--color-error-text);"><i class="fa-solid fa-trash"></i></button>
             </div>
           </div>
         `).join('');
-      } catch (err) { grid.innerHTML = '<p class="text-error">Error loading courses</p>'; }
+      } catch (err) { grid.innerHTML = '<p class="text-error">Error</p>'; }
     }
+
+    function openForm() {
+      document.getElementById('courseModalTitle').textContent = 'Add Course';
+      document.getElementById('courseForm').reset();
+      document.getElementById('courseId').value = '';
+      App.modal.open('courseModal');
+    }
+
+    function editCourse(id) {
+      const c = allCourses.find(x => x._id === id);
+      if (!c) return;
+      document.getElementById('courseModalTitle').textContent = 'Edit Course';
+      document.getElementById('courseId').value = c._id;
+      document.getElementById('titleEn').value = c.title.en;
+      document.getElementById('titleHa').value = c.title.ha;
+      document.getElementById('descEn').value = c.description.en;
+      document.getElementById('descHa').value = c.description.ha;
+      document.getElementById('price').value = c.price;
+      document.getElementById('duration').value = c.duration;
+      document.getElementById('image').value = c.image;
+      document.getElementById('telegramLink').value = c.telegramLink || '';
+      App.modal.open('courseModal');
+    }
+
+    async function archiveCourse(id) {
+      if (!confirm('Are you sure you want to archive this course?')) return;
+      try { await App.api.del('/courses/' + id); App.notify.success('Archived'); loadCourses(); } catch { App.notify.error('Failed'); }
+    }
+
+    document.getElementById('imageUpload').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        App.notify.info('Uploading...');
+        try {
+          const sigRes = await App.api.get('/uploads/signature');
+          const { signature, timestamp, folder, apiKey, cloudName } = sigRes.data;
+          const fd = new FormData();
+          fd.append('file', file); fd.append('api_key', apiKey); fd.append('timestamp', timestamp); fd.append('signature', signature); fd.append('folder', folder);
+          const cloudRes = await fetch('https://api.cloudinary.com/v1_1/' + cloudName + '/auto/upload', { method: 'POST', body: fd });
+          const data = await cloudRes.json();
+          if (data.secure_url) { document.getElementById('image').value = data.secure_url; App.notify.success('Uploaded!'); }
+        } catch(err) { App.notify.error('Upload failed'); }
+      }
+    });
 
     document.getElementById('courseForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      await App.form.submit(e.target, async (data) => {
-        const payload = {
-          title: { en: data.titleEn, ha: data.titleHa },
-          description: { en: data.descEn, ha: data.descHa },
-          price: Number(data.price),
-          duration: data.duration,
-          image: data.image,
-          telegramLink: data.telegramLink
-        };
-        await App.api.post('/courses', payload);
-        App.notify.success('Course created');
-        App.modal.close('courseModal');
-        loadCourses();
-      });
+      const id = document.getElementById('courseId').value;
+      const payload = {
+        title: { en: document.getElementById('titleEn').value, ha: document.getElementById('titleHa').value },
+        description: { en: document.getElementById('descEn').value, ha: document.getElementById('descHa').value },
+        price: Number(document.getElementById('price').value), duration: document.getElementById('duration').value,
+        image: document.getElementById('image').value, telegramLink: document.getElementById('telegramLink').value
+      };
+      try {
+        if (id) await App.api.put('/admin/courses/' + id, payload);
+        else await App.api.post('/courses', payload);
+        App.notify.success('Saved'); App.modal.close('courseModal'); loadCourses();
+      } catch { App.notify.error('Failed'); }
     });
 
     loadCourses();
   </script>
+  <script src="/js/admin.js"></script>
 </body>
 </html>
