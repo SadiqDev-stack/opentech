@@ -1,13 +1,14 @@
-/* ============================================================
-   OpenTech — core.js
-   ============================================================ */
-
 const App = (() => {
   const API_BASE = '/api';
 
   async function request(method, path, body, options = {}) {
     const url = path.startsWith('http') ? path : API_BASE + path;
-    const fetchOptions = { method, credentials: 'include', headers: { Accept: 'application/json' }, ...options };
+    const fetchOptions = {
+      method,
+      credentials: 'include',
+      headers: { Accept: 'application/json' },
+      ...options
+    };
     if (body !== undefined && !(body instanceof FormData)) {
       fetchOptions.headers['Content-Type'] = 'application/json';
       fetchOptions.body = JSON.stringify(body);
@@ -17,16 +18,16 @@ const App = (() => {
     try {
       const res = await fetch(url, fetchOptions);
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) { 
-        const err = new Error(data.message || `Request failed (${res.status})`); 
-        err.status = res.status; 
-        err.data = data; 
-        throw err; 
+      if (!res.ok) {
+        const err = new Error(data.message || `Request failed (${res.status})`);
+        err.status = res.status;
+        err.data = data;
+        throw err;
       }
       return data;
-    } catch (err) { 
-      if (!err.status) err.message = err.message || 'Network error'; 
-      throw err; 
+    } catch (err) {
+      if (!err.status) err.message = err.message || 'Network error';
+      throw err;
     }
   }
 
@@ -53,15 +54,15 @@ const App = (() => {
     const toastEl = host.querySelector('.toast');
     const msgEl = host.querySelector('.toast__msg');
     const iconEl = host.querySelector('i');
-    toastEl.classList.remove('toast--success', 'toast--error');
+    toastEl.classList.remove('toast--success', 'toast--error', 'toast--warning');
     if (type === 'success') { toastEl.classList.add('toast--success'); iconEl.className = 'fa-solid fa-circle-check'; }
     else if (type === 'error') { toastEl.classList.add('toast--error'); iconEl.className = 'fa-solid fa-circle-exclamation'; }
-    else if (type === 'warning') { iconEl.className = 'fa-solid fa-triangle-exclamation'; }
+    else if (type === 'warning') { toastEl.classList.add('toast--warning'); iconEl.className = 'fa-solid fa-triangle-exclamation'; }
     else { iconEl.className = 'fa-solid fa-circle-info'; }
     msgEl.textContent = message;
     host.classList.add('is-visible');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => host.classList.remove('is-visible'), 3000);
+    toastTimer = setTimeout(() => host.classList.remove('is-visible'), 4000);
   }
   notify.success = (m) => notify(m, 'success');
   notify.error = (m) => notify(m, 'error');
@@ -154,8 +155,6 @@ const App = (() => {
     user: null,
     async me() { try { const res = await api.get('/auth/me'); auth.user = res?.data?.user || null; } catch { auth.user = null; } return auth.user; },
     async logout() { try { await api.post('/auth/logout'); } catch {} auth.user = null; location.href = '/'; },
-    
-    // Immediate check for account access
     async checkAccess() {
       const user = await auth.me();
       if (!user) {
@@ -201,7 +200,6 @@ const App = (() => {
               <i class="fa-solid fa-cart-shopping"></i>
               <span class="cart-badge" data-cart-count style="display:none">0</span>
             </a>
-            <!-- Account Button: Handled by JS to check auth -->
             <button id="accountBtn" class="icon-btn" aria-label="Account">
               <i class="fa-solid fa-user"></i>
             </button>
@@ -263,22 +261,14 @@ const App = (() => {
       });
     }
 
-    // Account Button Click Handler (Fetches immediately, routes based on auth)
     const accountBtn = document.getElementById('accountBtn');
     if (accountBtn) {
       accountBtn.addEventListener('click', async (e) => {
         e.preventDefault();
-        // Immediate visual feedback while fetching
         const originalHTML = accountBtn.innerHTML;
         accountBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-        
         const isAuth = await auth.checkAccess();
-        
-        if (isAuth) {
-          window.location.href = '/account';
-        } else {
-          // checkAccess handles the redirect to /register if not logged in
-        }
+        if (isAuth) window.location.href = '/account';
         accountBtn.innerHTML = originalHTML;
       });
     }

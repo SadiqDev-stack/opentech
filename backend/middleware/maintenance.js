@@ -4,15 +4,16 @@ import env from '../config/env.js';
 import User from '../models/User.js';
 
 export async function checkMaintenance(req, res, next) {
-  // Skip for API, assets, and admin routes
+  // ONLY check for API routes. Static files (HTML, CSS, JS) load instantly.
+  if (!req.path.startsWith('/api')) return next();
+
+  // Whitelist essential API routes (auth, admin, settings)
   if (
-    req.path.startsWith('/api') ||
-    req.path.startsWith('/admin') ||
-    req.path.startsWith('/assets') ||
-    req.path.startsWith('/css') ||
-    req.path.startsWith('/js') ||
-    req.path === '/admin-login' ||
-    req.path === '/admin-login.html'
+    req.path.startsWith('/api/auth') ||
+    req.path.startsWith('/api/admin') ||
+    req.path.startsWith('/api/settings') ||
+    req.path.startsWith('/api/payments/webhook') ||
+    req.path === '/api/health'
   ) {
     return next();
   }
@@ -21,7 +22,7 @@ export async function checkMaintenance(req, res, next) {
     const setting = await Setting.findOne();
     if (!setting || !setting.maintenanceMode) return next();
 
-    // Check if user is admin (via cookie)
+    // Check if user is admin
     const token = req.cookies[env.cookieName];
     if (token) {
       try {
@@ -31,12 +32,12 @@ export async function checkMaintenance(req, res, next) {
       } catch {}
     }
 
-    res.status(503).send(`
-      <html><body style="background:#101010;color:#fff;font-family:sans-serif;text-align:center;padding:50px;">
-      <h1>Under Maintenance</h1>
-      <p>OpenTech is currently undergoing scheduled maintenance. Please check back soon.</p>
-      </body></html>
-    `);
+    // Block with JSON response
+    res.status(503).json({
+      success: false,
+      message: 'The site is currently under maintenance. Please check back soon.',
+      data: null
+    });
   } catch (err) {
     next();
   }
