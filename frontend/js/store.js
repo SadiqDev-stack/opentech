@@ -1,30 +1,24 @@
 (async function () {
   await App.i18n.init(); App.injectChrome();
-  
   const grid = document.getElementById('productsGrid');
   const searchInput = document.getElementById('productSearch');
   const checkoutForm = document.getElementById('checkoutForm');
-  let page = 1;
   let allProducts = [];
-  let hasMore = true;
 
-  async function loadProducts(reset = false) {
-    if (reset) { page = 1; allProducts = []; grid.innerHTML = ''; hasMore = true; }
-    if (!hasMore) return;
+  async function loadProducts(query = '') {
+    grid.innerHTML = '<div class="skeleton skeleton--card"></div>';
     try {
-      const res = await App.api.get(`/products?page=${page}&limit=9&search=${searchInput.value}`);
-      if (res.data.length > 0) {
-        allProducts = reset ? res.data : [...allProducts, ...res.data];
-        renderProducts(allProducts);
-        page++;
-        hasMore = page <= res.meta.pages;
-      } else { hasMore = false; }
-    } catch (err) { grid.innerHTML = App.render.empty('fa-exclamation-triangle', 'Error'); }
+      const res = await App.api.get(`/products?search=${query}`);
+      allProducts = res.data || [];
+      renderProducts(allProducts);
+    } catch (err) { grid.innerHTML = App.render.empty('fa-exclamation-triangle', 'Error loading products. Check DB.'); }
   }
 
   function renderProducts(products) {
+    if (products.length === 0) { grid.innerHTML = App.render.empty('fa-store', 'No products found.'); return; }
     grid.innerHTML = products.map(p => {
       const name = p.name[App.i18n.lang] || p.name.ha;
+      const desc = p.description[App.i18n.lang] || p.description.ha;
       const isOut = p.stock === 0;
       return `
       <article class="product-card">
@@ -36,7 +30,7 @@
         <span class="product-card__price">${App.naira(p.price)}</span>
         <div class="product-card__actions">
           <button class="btn btn--outline" data-add="${p._id}" ${isOut ? 'disabled' : ''}><i class="fa-solid fa-cart-plus"></i> Add</button>
-          <button class="btn btn--primary" data-buy="${p._id}" ${isOut ? 'disabled' : ''}>Buy</button>
+          <button class="btn btn--primary" data-buy="${p._id}" ${isOut ? 'disabled' : ''}>Buy Now</button>
         </div>
       </article>`;
     }).join('');
@@ -63,6 +57,7 @@
     window._currentCheckoutItems = items;
   }
 
+  // Global function for cart page to call
   window.purchaseCart = () => {
     const cart = App.cart.get();
     if (cart.length === 0) return App.notify.warning('Cart is empty');
@@ -79,11 +74,6 @@
     });
   });
 
-  searchInput.addEventListener('input', () => {
-    clearTimeout(window.searchTimeout);
-    window.searchTimeout = setTimeout(() => loadProducts(true), 300);
-  });
-
-  App.infiniteScroll(grid, () => loadProducts(false));
-  loadProducts(true);
+  searchInput.addEventListener('input', (e) => { clearTimeout(window.searchTimeout); window.searchTimeout = setTimeout(() => loadProducts(e.target.value), 300); });
+  loadProducts();
 })();

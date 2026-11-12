@@ -1,72 +1,40 @@
 <!DOCTYPE html>
 <html lang="ha">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Innovations — OpenTech</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <link rel="stylesheet" href="/css/base.css" />
-  <link rel="stylesheet" href="/css/layout.css" />
-  <link rel="stylesheet" href="/css/components.css" />
-  <link rel="stylesheet" href="/css/pages.css" />
+  <link rel="stylesheet" href="/css/base.css" /><link rel="stylesheet" href="/css/layout.css" /><link rel="stylesheet" href="/css/components.css" /><link rel="stylesheet" href="/css/pages.css" />
 </head>
 <body>
   <main class="section">
     <div class="section__head">
-      <div>
-        <h1 class="section__title" data-i18n="inno_title">Ayyukanmu</h1>
-        <p class="section__sub" data-i18n="inno_sub">Kere-kere da aikin injiniya da muka kammala.</p>
-      </div>
+      <div><h1 class="section__title">Ayyukanmu</h1><p class="section__sub">Kere-kere da aikin injiniya da muka kammala.</p></div>
       <button class="btn btn--primary btn--sm" data-modal-open="requestModal"><i class="fa-solid fa-plus"></i> Request Project</button>
     </div>
-    
     <div class="relative mb-4">
       <i class="fa-solid fa-search" style="position:absolute; left:12px; top:12px; color:var(--color-muted)"></i>
       <input type="search" id="innoSearch" class="field__input" placeholder="Search innovations..." style="padding-left:36px;" />
     </div>
-
-    <div class="grid-2" id="innovationsGrid" style="max-height: 500px; overflow-y: auto; padding-right: 8px;">
-      <div class="skeleton skeleton--card"></div>
-    </div>
+    <div class="grid-2" id="innovationsGrid"><div class="skeleton skeleton--card"></div></div>
   </main>
 
   <!-- Request Modal -->
   <div id="requestModal" class="modal">
     <div class="modal__sheet">
       <div class="modal__head">
-        <div>
-          <h3 class="modal__title">Request Custom Project</h3>
-          <p class="modal__sub">Tell us what you need built.</p>
-        </div>
+        <div><h3 class="modal__title">Request Custom Project</h3><p class="modal__sub">Tell us what you need built.</p></div>
         <button class="modal__close" data-modal-close="requestModal"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <form id="requestForm" class="flex-col gap-3">
+        <div class="field"><label class="field__label">Full Name</label><input type="text" name="fullName" class="field__input" required /></div>
+        <div class="field"><label class="field__label">Email</label><input type="email" name="email" class="field__input" required /></div>
+        <div class="field"><label class="field__label">Phone Number</label><input type="tel" name="phone" class="field__input" required /></div>
+        <div class="field"><label class="field__label">Project Title</label><input type="text" name="title" class="field__input" required /></div>
+        <div class="field"><label class="field__label">Project Description</label><textarea name="description" class="field__input" required rows="3"></textarea></div>
+        <div class="field"><label class="field__label">Estimated Budget (₦) - Optional</label><input type="number" name="budget" class="field__input" /></div>
         <div class="field">
-          <label class="field__label">Full Name</label>
-          <input type="text" name="fullName" class="field__input" required />
-        </div>
-        <div class="field">
-          <label class="field__label">Email</label>
-          <input type="email" name="email" class="field__input" required />
-        </div>
-        <div class="field">
-          <label class="field__label">Phone Number</label>
-          <input type="tel" name="phone" class="field__input" required />
-        </div>
-        <div class="field">
-          <label class="field__label">Project Title</label>
-          <input type="text" name="title" class="field__input" required />
-        </div>
-        <div class="field">
-          <label class="field__label">Project Description</label>
-          <textarea name="description" class="field__input" required rows="3"></textarea>
-        </div>
-        <div class="field">
-          <label class="field__label">Estimated Budget (₦) - Optional</label>
-          <input type="number" name="budget" class="field__input" />
-        </div>
-        <div class="field">
-          <label class="field__label">Attachment (Optional Image/PDF)</label>
+          <label class="field__label">Attachment (Optional)</label>
           <input type="file" id="requestAttachment" class="field__input" accept="image/*,.pdf" />
           <input type="hidden" name="attachmentUrl" id="attachmentUrl" />
         </div>
@@ -74,7 +42,6 @@
       </form>
     </div>
   </div>
-
   <script src="/js/core.js"></script>
   <script src="/js/innovations.js"></script>
 </body>

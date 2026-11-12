@@ -1,29 +1,22 @@
 (async function () {
   await App.i18n.init(); App.injectChrome();
-  
   const grid = document.getElementById('innovationsGrid');
   const searchInput = document.getElementById('innoSearch');
   const requestForm = document.getElementById('requestForm');
   const fileInput = document.getElementById('requestAttachment');
-  let page = 1;
   let allInnovations = [];
-  let hasMore = true;
 
-  async function loadInnovations(reset = false) {
-    if (reset) { page = 1; allInnovations = []; grid.innerHTML = ''; hasMore = true; }
-    if (!hasMore) return;
+  async function loadInnovations(query = '') {
+    grid.innerHTML = '<div class="skeleton skeleton--card"></div>';
     try {
-      const res = await App.api.get(`/innovations?page=${page}&limit=9&search=${searchInput.value}`);
-      if (res.data.length > 0) {
-        allInnovations = reset ? res.data : [...allInnovations, ...res.data];
-        renderInnovations(allInnovations);
-        page++;
-        hasMore = page <= res.meta.pages;
-      } else { hasMore = false; }
-    } catch (err) { grid.innerHTML = App.render.empty('fa-exclamation-triangle', 'Error'); }
+      const res = await App.api.get(`/innovations?search=${query}`);
+      allInnovations = res.data || [];
+      renderInnovations(allInnovations);
+    } catch (err) { grid.innerHTML = App.render.empty('fa-exclamation-triangle', 'Error loading innovations.'); }
   }
 
   function renderInnovations(items) {
+    if (items.length === 0) { grid.innerHTML = App.render.empty('fa-microchip', 'No innovations found.'); return; }
     grid.innerHTML = items.map(i => {
       const title = i.title[App.i18n.lang] || i.title.ha;
       const desc = i.description[App.i18n.lang] || i.description.ha;
@@ -44,18 +37,18 @@
 
   fileInput.addEventListener('change', async (e) => {
     const file = e.target.files[0];
-    if (!file) return;
-    App.notify.info('Uploading...');
-    try {
-      const sigRes = await App.api.get('/uploads/signature');
-      const { signature, timestamp, folder, apiKey, cloudName } = sigRes.data;
-      const formData = new FormData();
-      formData.append('file', file); formData.append('api_key', apiKey); formData.append('timestamp', timestamp);
-      formData.append('signature', signature); formData.append('folder', folder);
-      const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, { method: 'POST', body: formData });
-      const cloudData = await cloudRes.json();
-      if (cloudData.secure_url) { document.getElementById('attachmentUrl').value = cloudData.secure_url; App.notify.success('Uploaded!'); }
-    } catch (err) { App.notify.error('Upload failed'); }
+    if (file) {
+      App.notify.info('Uploading...');
+      try {
+        const sigRes = await App.api.get('/uploads/signature');
+        const { signature, timestamp, folder, apiKey, cloudName } = sigRes.data;
+        const fd = new FormData();
+        fd.append('file', file); fd.append('api_key', apiKey); fd.append('timestamp', timestamp); fd.append('signature', signature); fd.append('folder', folder);
+        const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, { method: 'POST', body: fd });
+        const cloudData = await cloudRes.json();
+        if (cloudData.secure_url) { document.getElementById('attachmentUrl').value = cloudData.secure_url; App.notify.success('Uploaded!'); }
+      } catch (err) { App.notify.error('Upload failed'); }
+    }
   });
 
   requestForm.addEventListener('submit', async (e) => {
@@ -68,11 +61,6 @@
     });
   });
 
-  searchInput.addEventListener('input', () => {
-    clearTimeout(window.searchTimeout);
-    window.searchTimeout = setTimeout(() => loadInnovations(true), 300);
-  });
-
-  App.infiniteScroll(grid, () => loadInnovations(false));
-  loadInnovations(true);
+  searchInput.addEventListener('input', (e) => { clearTimeout(window.searchTimeout); window.searchTimeout = setTimeout(() => loadInnovations(e.target.value), 300); });
+  loadInnovations();
 })();

@@ -3,12 +3,7 @@ const App = (() => {
 
   async function request(method, path, body, options = {}) {
     const url = path.startsWith('http') ? path : API_BASE + path;
-    const fetchOptions = {
-      method,
-      credentials: 'include',
-      headers: { Accept: 'application/json' },
-      ...options
-    };
+    const fetchOptions = { method, credentials: 'include', headers: { Accept: 'application/json' }, ...options };
     if (body !== undefined && !(body instanceof FormData)) {
       fetchOptions.headers['Content-Type'] = 'application/json';
       fetchOptions.body = JSON.stringify(body);
@@ -20,9 +15,7 @@ const App = (() => {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         const err = new Error(data.message || `Request failed (${res.status})`);
-        err.status = res.status;
-        err.data = data;
-        throw err;
+        err.status = res.status; err.data = data; throw err;
       }
       return data;
     } catch (err) {
@@ -157,11 +150,7 @@ const App = (() => {
     async logout() { try { await api.post('/auth/logout'); } catch {} auth.user = null; location.href = '/'; },
     async checkAccess() {
       const user = await auth.me();
-      if (!user) {
-        App.notify.warning('Please register or log in to access your account.');
-        window.location.href = '/register';
-        return false;
-      }
+      if (!user) { notify.warning('Please register or log in.'); window.location.href = '/register'; return false; }
       return true;
     }
   };
@@ -183,39 +172,23 @@ const App = (() => {
               <span class="brand__sub">Kano · Nigeria</span>
             </div>
           </a>
-          
           <nav class="header-nav">
             <a href="/" class="header-nav__link ${isHome ? 'active' : ''}"><i class="fa-solid fa-house"></i><span data-i18n="nav_home">Gida</span></a>
             <a href="/academy" class="header-nav__link ${isAcademy ? 'active' : ''}"><i class="fa-solid fa-graduation-cap"></i><span data-i18n="nav_courses">Kwasa-kwasai</span></a>
             <a href="/store" class="header-nav__link ${isStore ? 'active' : ''}"><i class="fa-solid fa-store"></i><span data-i18n="nav_store">Shago</span></a>
             <a href="/innovations" class="header-nav__link ${isInno ? 'active' : ''}"><i class="fa-solid fa-microchip"></i><span data-i18n="nav_projects">Ayyukanmu</span></a>
           </nav>
-
           <div class="header-actions">
-            <button id="langToggleBtn" class="lang-pill" type="button" aria-label="Switch language">
-              <i class="fa-solid fa-language"></i>
-              <span id="langCurrentText">HAUSA</span>
-            </button>
-            <a href="/cart" class="icon-btn" aria-label="Cart">
-              <i class="fa-solid fa-cart-shopping"></i>
-              <span class="cart-badge" data-cart-count style="display:none">0</span>
-            </a>
-            <button id="accountBtn" class="icon-btn" aria-label="Account">
-              <i class="fa-solid fa-user"></i>
-            </button>
-            <button class="icon-btn menu-toggle" id="menuToggleBtn" aria-label="Menu">
-              <i class="fa-solid fa-bars"></i>
-            </button>
+            <button id="langToggleBtn" class="lang-pill" type="button" aria-label="Switch language"><i class="fa-solid fa-language"></i><span id="langCurrentText">HAUSA</span></button>
+            <a href="/cart" class="icon-btn" aria-label="Cart"><i class="fa-solid fa-cart-shopping"></i><span class="cart-badge" data-cart-count style="display:none">0</span></a>
+            <button id="accountBtn" class="icon-btn" aria-label="Account"><i class="fa-solid fa-user"></i></button>
+            <button class="icon-btn menu-toggle" id="menuToggleBtn" aria-label="Menu"><i class="fa-solid fa-bars"></i></button>
           </div>
         </div>
       </header>
-
       <div class="sidebar-overlay" id="sidebarOverlay">
         <div class="sidebar">
-          <div class="sidebar-header">
-            <span class="brand__name">OPEN<span>TECH</span></span>
-            <button class="icon-btn" id="closeSidebarBtn"><i class="fa-solid fa-xmark"></i></button>
-          </div>
+          <div class="sidebar-header"><span class="brand__name">OPEN<span>TECH</span></span><button class="icon-btn" id="closeSidebarBtn"><i class="fa-solid fa-xmark"></i></button></div>
           <nav class="sidebar-nav">
             <a href="/" class="sidebar-link ${isHome ? 'active' : ''}"><i class="fa-solid fa-house"></i> <span data-i18n="nav_home">Gida</span></a>
             <a href="/academy" class="sidebar-link ${isAcademy ? 'active' : ''}"><i class="fa-solid fa-graduation-cap"></i> <span data-i18n="nav_courses">Kwasa-kwasai</span></a>
@@ -245,36 +218,22 @@ const App = (() => {
 
     modal.bind();
     cart.updateBadge();
-    
-    const langBtn = document.getElementById('langToggleBtn');
-    if (langBtn) langBtn.addEventListener('click', () => i18n.toggle());
-
-    const menuBtn = document.getElementById('menuToggleBtn');
-    const closeSidebarBtn = document.getElementById('closeSidebarBtn');
-    const sidebarOverlay = document.getElementById('sidebarOverlay');
-
+    const langBtn = document.getElementById('langToggleBtn'); if (langBtn) langBtn.addEventListener('click', () => i18n.toggle());
+    const menuBtn = document.getElementById('menuToggleBtn'); const closeSidebarBtn = document.getElementById('closeSidebarBtn'); const sidebarOverlay = document.getElementById('sidebarOverlay');
     if (menuBtn && sidebarOverlay) {
       menuBtn.addEventListener('click', () => sidebarOverlay.classList.add('is-open'));
       closeSidebarBtn.addEventListener('click', () => sidebarOverlay.classList.remove('is-open'));
-      sidebarOverlay.addEventListener('click', (e) => {
-        if (e.target === sidebarOverlay) sidebarOverlay.classList.remove('is-open');
-      });
+      sidebarOverlay.addEventListener('click', (e) => { if (e.target === sidebarOverlay) sidebarOverlay.classList.remove('is-open'); });
     }
-
     const accountBtn = document.getElementById('accountBtn');
     if (accountBtn) {
       accountBtn.addEventListener('click', async (e) => {
-        e.preventDefault();
-        const originalHTML = accountBtn.innerHTML;
-        accountBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-        const isAuth = await auth.checkAccess();
-        if (isAuth) window.location.href = '/account';
-        accountBtn.innerHTML = originalHTML;
+        e.preventDefault(); const originalHTML = accountBtn.innerHTML; accountBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+        const isAuth = await auth.checkAccess(); if (isAuth) window.location.href = '/account'; accountBtn.innerHTML = originalHTML;
       });
     }
   }
 
   return { api, notify, modal, form, render, naira, i18n, cart, auth, injectChrome };
 })();
-
 window.App = App;

@@ -1,31 +1,59 @@
 <!DOCTYPE html>
 <html lang="ha">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Cart — OpenTech</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <link rel="stylesheet" href="/css/base.css" />
-  <link rel="stylesheet" href="/css/layout.css" />
-  <link rel="stylesheet" href="/css/components.css" />
-  <link rel="stylesheet" href="/css/pages.css" />
+  <link rel="stylesheet" href="/css/base.css" /><link rel="stylesheet" href="/css/layout.css" /><link rel="stylesheet" href="/css/components.css" /><link rel="stylesheet" href="/css/pages.css" />
 </head>
 <body>
   <main class="section" style="max-width: 800px;">
-    <div class="section__head">
-      <div><h1 class="section__title">Shopping Cart</h1></div>
-    </div>
+    <div class="section__head"><div><h1 class="section__title">Shopping Cart</h1></div></div>
     <div id="cartItems" class="flex-col gap-3"></div>
-    
     <div id="cartSummary" class="mt-4 hidden" style="background:var(--color-card); border:1px solid var(--color-border); border-radius:var(--radius-lg); padding:16px;">
-      <div class="flex justify-between mb-2">
-        <span class="text-muted">Subtotal</span>
-        <span id="cartSubtotal" class="text-gold font-bold">₦0</span>
-      </div>
-      <button class="btn btn--primary btn--block mt-4" onclick="window.location.href='/store?checkout=true'">Purchase All</button>
+      <div class="flex justify-between mb-2"><span class="text-muted">Subtotal</span><span id="cartSubtotal" class="text-gold font-bold">₦0</span></div>
+      <button class="btn btn--primary btn--block mt-4" onclick="checkoutAll()">Purchase All</button>
     </div>
   </main>
   <script src="/js/core.js"></script>
-  <script src="/js/cart.js"></script>
+  <script>
+    App.injectChrome();
+
+    function renderCart() {
+      const items = App.cart.get();
+      const container = document.getElementById('cartItems');
+      const summary = document.getElementById('cartSummary');
+      const subtotalEl = document.getElementById('cartSubtotal');
+
+      if (items.length === 0) {
+        container.innerHTML = App.render.empty('fa-cart-shopping', 'Your cart is empty.');
+        summary.classList.add('hidden'); return;
+      }
+
+      let total = 0;
+      container.innerHTML = items.map((item) => {
+        total += item.price * item.qty;
+        return `
+        <div class="card" style="flex-direction:row; align-items:center; padding:12px; margin-bottom:12px; flex-wrap:wrap; gap:12px;">
+          <img src="${item.image}" style="width:60px; height:60px; border-radius:8px; object-fit:cover;" />
+          <div style="flex:1; min-width:120px;"><h4 style="font-size:14px; margin-bottom:4px;">${item.name}</h4><span class="text-gold font-bold">${App.naira(item.price)}</span></div>
+          <div class="flex items-center gap-2" style="background:var(--color-black); border:1px solid var(--color-border); border-radius:var(--radius); padding:2px;">
+            <button class="btn btn--ghost" style="padding:4px 8px;" onclick="updateQty('${item.id}', -1)"><i class="fa-solid fa-minus"></i></button>
+            <span class="text-white font-bold" style="min-width:20px; text-align:center;">${item.qty}</span>
+            <button class="btn btn--ghost" style="padding:4px 8px;" onclick="updateQty('${item.id}', 1)"><i class="fa-solid fa-plus"></i></button>
+          </div>
+          <button class="btn btn--outline btn--sm" onclick="removeItem('${item.id}')" style="color:var(--color-error-text); border-color:rgba(211,47,47,0.3);"><i class="fa-solid fa-trash"></i></button>
+        </div>`;
+      }).join('');
+      subtotalEl.textContent = App.naira(total);
+      summary.classList.remove('hidden');
+    }
+
+    window.updateQty = (id, delta) => { App.cart.updateQty(id, delta); renderCart(); };
+    window.removeItem = (id) => { App.cart.remove(id); renderCart(); };
+    window.checkoutAll = () => { window.location.href = '/store?checkout=true'; };
+
+    renderCart();
+  </script>
 </body>
 </html>

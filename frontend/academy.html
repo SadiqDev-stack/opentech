@@ -1,65 +1,41 @@
 <!DOCTYPE html>
 <html lang="ha">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Academy — OpenTech</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <link rel="stylesheet" href="/css/base.css" />
-  <link rel="stylesheet" href="/css/layout.css" />
-  <link rel="stylesheet" href="/css/components.css" />
-  <link rel="stylesheet" href="/css/pages.css" />
+  <link rel="stylesheet" href="/css/base.css" /><link rel="stylesheet" href="/css/layout.css" /><link rel="stylesheet" href="/css/components.css" /><link rel="stylesheet" href="/css/pages.css" />
 </head>
 <body>
   <main class="section">
     <div class="section__head">
-      <div>
-        <h1 class="section__title" data-i18n="academy_title">Kwasa-kwasan OpenTech</h1>
-        <p class="section__sub" data-i18n="academy_sub">Koyi sana'a ta hannu a saukake.</p>
-      </div>
+      <div><h1 class="section__title">Kwasa-kwasan OpenTech</h1><p class="section__sub">Koyi sana'a ta hannu a saukake.</p></div>
     </div>
     <div class="relative mb-4">
       <i class="fa-solid fa-search" style="position:absolute; left:12px; top:12px; color:var(--color-muted)"></i>
       <input type="search" id="courseSearch" class="field__input" placeholder="Search courses..." style="padding-left:36px;" />
     </div>
-    <div class="grid-3" id="coursesGrid">
-      <div class="skeleton skeleton--card"></div>
-    </div>
+    <div class="grid-3" id="coursesGrid"><div class="skeleton skeleton--card"></div></div>
   </main>
-
   <!-- Enroll Modal -->
   <div id="enrollModal" class="modal">
     <div class="modal__sheet">
       <div class="modal__head">
-        <div>
-          <h3 class="modal__title">Enroll in Course</h3>
-          <p class="modal__sub" id="modalCourseName">Loading...</p>
-        </div>
+        <div><h3 class="modal__title">Enroll in Course</h3><p class="modal__sub" id="modalCourseName">Loading...</p></div>
         <button class="modal__close" data-modal-close="enrollModal"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <form id="enrollForm" class="flex-col gap-3">
         <input type="hidden" name="courseId" id="modalCourseId" />
-        <div class="field">
-          <label class="field__label">Full Name</label>
-          <input type="text" name="fullName" class="field__input" required />
-        </div>
-        <div class="field">
-          <label class="field__label">Email</label>
-          <input type="email" name="email" class="field__input" required />
-        </div>
-        <div class="field">
-          <label class="field__label">Phone Number</label>
-          <input type="tel" name="phone" class="field__input" required />
-        </div>
+        <div class="field"><label class="field__label">Full Name</label><input type="text" name="fullName" class="field__input" required /></div>
+        <div class="field"><label class="field__label">Email</label><input type="email" name="email" class="field__input" required /></div>
+        <div class="field"><label class="field__label">Phone Number</label><input type="tel" name="phone" class="field__input" required /></div>
         <div class="flex justify-between items-center p-3 mt-2" style="background:var(--color-elevated); border-radius:var(--radius);">
-          <span class="text-muted">Price</span>
-          <span class="text-gold font-bold" id="modalCoursePrice">₦0</span>
+          <span class="text-muted">Price</span><span class="text-gold font-bold" id="modalCoursePrice">₦0</span>
         </div>
         <button type="submit" class="btn btn--primary w-full mt-2">Pay Now with Paystack</button>
       </form>
     </div>
   </div>
-
   <script src="/js/core.js"></script>
   <script src="/js/academy.js"></script>
 </body>

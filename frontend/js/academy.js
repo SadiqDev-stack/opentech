@@ -1,35 +1,24 @@
 (async function () {
   await App.i18n.init(); App.injectChrome();
-  
   const grid = document.getElementById('coursesGrid');
   const searchInput = document.getElementById('courseSearch');
   const enrollModal = document.getElementById('enrollModal');
   const enrollForm = document.getElementById('enrollForm');
-  let page = 1;
   let allCourses = [];
-  let hasMore = true;
 
-  async function loadCourses(reset = false) {
-    if (reset) { page = 1; allCourses = []; grid.innerHTML = ''; hasMore = true; }
-    if (!hasMore) return;
-    
-    if (reset) grid.innerHTML = '<div class="skeleton skeleton--card"></div><div class="skeleton skeleton--card"></div>';
+  async function loadCourses(query = '') {
+    grid.innerHTML = '<div class="skeleton skeleton--card"></div><div class="skeleton skeleton--card"></div>';
     try {
-      const res = await App.api.get(`/courses?page=${page}&limit=9&search=${searchInput.value}`);
-      if (res.data.length > 0) {
-        allCourses = reset ? res.data : [...allCourses, ...res.data];
-        renderCourses(allCourses, reset);
-        page++;
-        hasMore = page <= res.meta.pages;
-      } else {
-        hasMore = false;
-      }
+      const res = await App.api.get(`/courses?search=${query}`);
+      allCourses = res.data || [];
+      renderCourses(allCourses);
     } catch (err) {
-      grid.innerHTML = App.render.empty('fa-exclamation-triangle', 'Error loading courses');
+      grid.innerHTML = App.render.empty('fa-exclamation-triangle', 'Error loading courses. Check DB connection.');
     }
   }
 
-  function renderCourses(courses, reset) {
+  function renderCourses(courses) {
+    if (courses.length === 0) { grid.innerHTML = App.render.empty('fa-graduation-cap', 'No courses found.'); return; }
     grid.innerHTML = courses.map(c => {
       const title = c.title[App.i18n.lang] || c.title.ha;
       const desc = c.description[App.i18n.lang] || c.description.ha;
@@ -70,11 +59,6 @@
     });
   });
 
-  searchInput.addEventListener('input', () => {
-    clearTimeout(window.searchTimeout);
-    window.searchTimeout = setTimeout(() => loadCourses(true), 300);
-  });
-
-  App.infiniteScroll(grid, () => loadCourses(false));
-  loadCourses(true);
+  searchInput.addEventListener('input', (e) => { clearTimeout(window.searchTimeout); window.searchTimeout = setTimeout(() => loadCourses(e.target.value), 300); });
+  loadCourses();
 })();
