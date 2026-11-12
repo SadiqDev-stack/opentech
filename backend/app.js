@@ -8,6 +8,7 @@ import cookieParser from 'cookie-parser';
 import env from './config/env.js';
 import { notFound, errorHandler } from './middleware/error.js';
 import { checkMaintenance } from './middleware/maintenance.js';
+import { logRequest } from './utils/logger.js'; // Added Logger
 
 import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/user.routes.js';
@@ -30,6 +31,9 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+// Request Logger (Must be at the top to capture everything)
+app.use(logRequest);
+
 app.set('trust proxy', 1);
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({ origin: true, credentials: true }));
@@ -41,10 +45,10 @@ app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Maintenance Mode (only checks DB if route is not static/api/assets)
+// Maintenance Mode (Only checks API routes)
 app.use(checkMaintenance);
 
-// API Routes (Each route handles its own DB connection inside the route/controller)
+// API Routes
 app.get('/api/health', (req, res) => res.json({ success: true, message: 'OpenTech API is running' }));
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
@@ -60,10 +64,10 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/settings', settingRoutes);
 
-// SEO
+// SEO Routes (Server-rendered Meta)
 app.use('/', seoRoutes);
 
-// Static Frontend (Loads instantly without DB)
+// Static Frontend
 const FRONTEND = path.resolve(__dirname, '..', 'frontend');
 app.use(express.static(FRONTEND, { extensions: ['html'] }));
 app.get('/', (req, res) => res.sendFile(path.join(FRONTEND, 'index.html')));
