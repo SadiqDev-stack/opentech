@@ -41,10 +41,10 @@ app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Maintenance Mode
+// Maintenance Mode (only checks DB if route is not static/api/assets)
 app.use(checkMaintenance);
 
-// API Routes
+// API Routes (Each route handles its own DB connection inside the route/controller)
 app.get('/api/health', (req, res) => res.json({ success: true, message: 'OpenTech API is running' }));
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
@@ -63,7 +63,7 @@ app.use('/api/settings', settingRoutes);
 // SEO
 app.use('/', seoRoutes);
 
-// Static Frontend
+// Static Frontend (Loads instantly without DB)
 const FRONTEND = path.resolve(__dirname, '..', 'frontend');
 app.use(express.static(FRONTEND, { extensions: ['html'] }));
 app.get('/', (req, res) => res.sendFile(path.join(FRONTEND, 'index.html')));

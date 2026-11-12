@@ -1,6 +1,7 @@
 import { connectDB, mongoose } from '../config/db.js';
 
-function withDB(handler) {
+// Wraps a route to ensure it connects to DB before running
+export default function withDB(handler) {
   return async function (req, res, next) {
     try {
       if (mongoose.connection.readyState !== 1) {
@@ -12,5 +13,3 @@ function withDB(handler) {
     }
   };
 }
-
-export default withDB;
