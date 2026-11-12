@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ha">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Innovations — OpenTech</title>
+  <meta name="theme-color" content="#101010" />
+  <link rel="icon" href="/assets/favicon.ico" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="/css/base.css" />
+  <link rel="stylesheet" href="/css/layout.css" />
+  <link rel="stylesheet" href="/css/components.css" />
+  <link rel="stylesheet" href="/css/pages.css" />
+  <link rel="stylesheet" href="/css/utilities.css" />
+</head>
+<body>
+  <main class="section">
+    <div class="section__head">
+      <div>
+        <h1 class="section__title" data-i18n="inno_title">Ayyukanmu</h1>
+        <p class="section__sub" data-i18n="inno_sub">Kere-kere da aikin injiniya da muka kammala.</p>
+      </div>
+    </div>
+
+    <div class="relative mb-4">
+      <i class="fa-solid fa-search" style="position:absolute; left:12px; top:12px; color:var(--color-muted)"></i>
+      <input type="search" id="innoSearchInput" class="field__input" placeholder="Search innovations..." style="padding-left: 36px;" />
+    </div>
+
+    <!-- Scrollable Box -->
+    <div id="innovationsGrid" class="grid-2" style="max-height: 500px; overflow-y: auto; padding-right: 8px; margin-bottom: 32px;">
+      <div class="skeleton skeleton--card"></div>
+      <div class="skeleton skeleton--card"></div>
+    </div>
+
+    <!-- Custom Project Request Form -->
+    <div class="card" style="padding: 24px;">
+      <h2 class="section__title mb-2" data-i18n="request_custom_title">Nemi Aikin Injiniya na Musamman</h2>
+      <p class="text-muted mb-4" style="font-size:13px;" data-i18n="request_custom_sub">Kuna bukatan a kera muku wani abu? Bayyana mana a kasa.</p>
+      <form id="requestForm" class="flex-col gap-3">
+        <div class="field">
+          <label class="field__label" data-i18n="name_label">Full Name</label>
+          <input type="text" name="name" class="field__input" required />
+        </div>
+        <div class="field">
+          <label class="field__label" data-i18n="email_label">Email</label>
+          <input type="email" name="email" class="field__input" required />
+        </div>
+        <div class="field">
+          <label class="field__label" data-i18n="project_desc_label">Project Description</label>
+          <textarea name="description" class="field__input" rows="3" required></textarea>
+        </div>
+        <button type="submit" class="btn btn--primary mt-2" data-i18n="request_btn">Submit Request</button>
+      </form>
+    </div>
+  </main>
+  <script src="/js/core.js"></script>
+  <script src="/js/innovations.js"></script>
+</body>
+</html>

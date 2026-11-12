@@ -1,10 +1,8 @@
-/* Homepage — API-first with mock fallback.
-   Tries to fetch from /api/courses and /api/products.
-   If the API is not yet available (Stage 2), it uses mock data. */
+/* Homepage — API-first with mock fallback. */
 
 (async function () {
   await App.i18n.init();
-  App.hydrateChrome();
+  App.injectChrome();
 
   const lang = App.i18n.lang;
   const t = (obj) => obj[lang] || obj.ha;
@@ -56,45 +54,47 @@
     }
   ];
 
-  const mockInnovation = {
-    _id: 'i1',
-    category: { ha: 'Ban Ruwa da Noma', en: 'Irrigation & Agriculture' },
-    title: { ha: 'Tsarin Ban Ruwa na Solar mai Taimakon Sensor', en: 'Sensor-assisted Solar Irrigation System' },
-    description: {
-      ha: 'Mun kera wannan na\'urar don manoma domin raba su da sayen man fetur mai tsada.',
-      en: 'Built for farmers to remove the cost of expensive fuel pumps.'
+  const mockInnovations = [
+    {
+      _id: 'i1',
+      category: { ha: 'Ban Ruwa da Noma', en: 'Irrigation & Agriculture' },
+      title: { ha: 'Tsarin Ban Ruwa na Solar', en: 'Sensor-assisted Solar Irrigation System' },
+      description: { ha: 'An kera wa manoma don rage kudin man fetur.', en: 'Built for farmers to remove the cost of expensive fuel pumps.' },
+      image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=600&q=70'
     },
-    image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=900&q=70'
-  };
+    {
+      _id: 'i2',
+      category: { ha: 'Makamashi', en: 'Renewable Energy' },
+      title: { ha: 'Tsarin Wutar Solar 10kVA', en: '10kVA Solar System' },
+      description: { ha: 'Don asibitoci da masana\'anta.', en: 'Commercial solar hybrid for hospitals and factories.' },
+      image: 'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?auto=format&fit=crop&w=600&q=70'
+    },
+    {
+      _id: 'i3',
+      category: { ha: 'IoT', en: 'Electronics & IoT' },
+      title: { ha: 'Na\'urar Sanar da Ruwa', en: 'Water Tank Monitor' },
+      description: { ha: 'Tana tura SMS idan tanki ya cika.', en: 'Sends SMS when tank is full or empty.' },
+      image: 'https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?auto=format&fit=crop&w=600&q=70'
+    }
+  ];
 
-  // --- Fetch Data (API First, Mock Fallback) ---
-  let courses = [];
-  let products = [];
-  let innovation = mockInnovation;
+  let courses = mockCourses;
+  let products = mockProducts;
+  let innovations = mockInnovations;
 
+  // --- Fetch Data ---
   try {
     const res = await App.api.get('/courses?limit=3');
     if (res.success && res.data.length > 0) courses = res.data;
-    else courses = mockCourses;
-  } catch {
-    courses = mockCourses; // fallback on API error
-  }
-
+  } catch {}
   try {
     const res = await App.api.get('/products?limit=2');
     if (res.success && res.data.length > 0) products = res.data;
-    else products = mockProducts;
-  } catch {
-    products = mockProducts; // fallback on API error
-  }
-
-  // Try to fetch 1 innovation if API exists
+  } catch {}
   try {
-    const res = await App.api.get('/innovations?limit=1');
-    if (res.success && res.data.length > 0) innovation = res.data[0];
-  } catch {
-    // use mock
-  }
+    const res = await App.api.get('/innovations?limit=3');
+    if (res.success && res.data.length > 0) innovations = res.data;
+  } catch {}
 
   // --- Render Courses ---
   const coursesEl = document.getElementById('featuredCourses');
@@ -145,28 +145,28 @@
     }).join('');
   }
 
-  // --- Render Innovation ---
+  // --- Render Innovations ---
   const innoEl = document.getElementById('featuredInnovations');
   if (innoEl) {
-    innoEl.innerHTML = `
+    innoEl.innerHTML = innovations.map((item) => `
       <article class="innovation-card">
         <div class="innovation-card__media">
-          <img src="${innovation.image}" alt="${App.render.escape(t(innovation.title))}" loading="lazy" />
-          <span class="innovation-card__tag">${App.render.escape(t(innovation.category))}</span>
+          <img src="${item.image}" alt="${App.render.escape(t(item.title))}" loading="lazy" />
+          <span class="innovation-card__tag">${App.render.escape(t(item.category))}</span>
         </div>
         <div class="innovation-card__body">
-          <h3 class="innovation-card__title">${App.render.escape(t(innovation.title))}</h3>
-          <p class="innovation-card__desc">${App.render.escape(t(innovation.description))}</p>
-          <a href="/innovations" class="btn btn--outline btn--block">
+          <h3 class="innovation-card__title">${App.render.escape(t(item.title))}</h3>
+          <p class="innovation-card__desc">${App.render.escape(t(item.description))}</p>
+          <a href="/innovations" class="btn btn--outline btn--block mt-auto" style="margin-top: auto;">
             <span>${App.i18n.t('request_project_btn')}</span>
             <i class="fa-solid fa-arrow-right"></i>
           </a>
         </div>
       </article>
-    `;
+    `).join('');
   }
 
-  // --- Interactions (Sample for now) ---
+  // --- Interactions ---
   document.addEventListener('click', (e) => {
     const enrollBtn = e.target.closest('[data-enroll]');
     if (enrollBtn) { App.notify.info('Course enrollment opens in the Academy page.'); return; }
