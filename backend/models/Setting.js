@@ -9,4 +9,4 @@ const settingSchema = new mongoose.Schema({
   ebulkSmsUsername: { type: String, default: '' },
   ebulkSmsApiKey: { type: String, default: '' }
 }, { timestamps: true });
-export default mongoose.model('Setting', settingSchema);
+export default mongoose.model('opentech_settings', settingSchema, 'opentech_settings');

@@ -8,4 +8,4 @@ const productSchema = new mongoose.Schema({
   slug: { type: String, unique: true },
   archived: { type: Boolean, default: false }
 }, { timestamps: true });
-export default mongoose.model('Product', productSchema);
+export default mongoose.model('Product', productSchema, 'opentech_products');

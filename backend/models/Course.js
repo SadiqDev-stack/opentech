@@ -9,4 +9,4 @@ const courseSchema = new mongoose.Schema({
   slug: { type: String, unique: true },
   archived: { type: Boolean, default: false }
 }, { timestamps: true });
-export default mongoose.model('Course', courseSchema);
+export default mongoose.model('Course', courseSchema, 'opentech_courses');

@@ -5,4 +5,4 @@ const enrollmentSchema = new mongoose.Schema({
   status: { type: String, enum: ['pending', 'paid', 'cancelled'], default: 'pending' },
   paymentReference: { type: String, default: '' }
 }, { timestamps: true });
-export default mongoose.model('Enrollment', enrollmentSchema);
+export default mongoose.model('Enrollment', enrollmentSchema, 'opentech_enrollments');

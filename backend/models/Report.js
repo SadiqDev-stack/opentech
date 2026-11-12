@@ -9,4 +9,4 @@ const reportSchema = new mongoose.Schema({
   status: { type: String, enum: ['pending', 'resolved'], default: 'pending' },
   adminResponse: { type: String, default: '' }
 }, { timestamps: true });
-export default mongoose.model('Report', reportSchema);
+export default mongoose.model('Report', reportSchema, 'opentech_reports');

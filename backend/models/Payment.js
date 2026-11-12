@@ -8,4 +8,4 @@ const paymentSchema = new mongoose.Schema({
   type: { type: String, enum: ['order', 'enrollment'], required: true },
   relatedId: { type: mongoose.Schema.Types.ObjectId, required: true }
 }, { timestamps: true });
-export default mongoose.model('Payment', paymentSchema);
+export default mongoose.model('Payment', paymentSchema, 'opentech_payments');

@@ -7,4 +7,4 @@ const innovationSchema = new mongoose.Schema({
   slug: { type: String, unique: true },
   archived: { type: Boolean, default: false }
 }, { timestamps: true });
-export default mongoose.model('Innovation', innovationSchema);
+export default mongoose.model('Innovation', innovationSchema, 'opentech_innovations');

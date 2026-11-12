@@ -8,4 +8,4 @@ const requestSchema = new mongoose.Schema({
   attachmentUrl: { type: String, default: '' },
   status: { type: String, enum: ['submitted', 'pending', 'completed', 'cancelled'], default: 'submitted' }
 }, { timestamps: true });
-export default mongoose.model('InnovationRequest', requestSchema);
+export default mongoose.model('InnovationRequest', requestSchema, 'opentech_innovation_requests');

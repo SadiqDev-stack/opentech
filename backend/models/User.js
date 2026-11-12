@@ -13,4 +13,4 @@ const userSchema = new mongoose.Schema({
   resetTokenExpires: { type: Date, default: null }
 }, { timestamps: true });
 userSchema.methods.toSafeJSON = function() { return { id: this._id, fullName: this.fullName, email: this.email, phone: this.phone, role: this.role }; };
-export default mongoose.model('User', userSchema);
+export default mongoose.model('User', userSchema, 'opentech_users');

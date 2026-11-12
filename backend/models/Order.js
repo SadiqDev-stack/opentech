@@ -14,4 +14,4 @@ const orderSchema = new mongoose.Schema({
   deliveryStatus: { type: String, enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'], default: 'pending' },
   paymentReference: { type: String, default: '' }
 }, { timestamps: true });
-export default mongoose.model('Order', orderSchema);
+export default mongoose.model('Order', orderSchema, 'opentech_orders');
