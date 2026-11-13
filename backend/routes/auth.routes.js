@@ -7,11 +7,17 @@ import validators from '../utils/validators.js';
 import { requireAuth } from '../middleware/auth.js';
 import withDB from '../middleware/db.js';
 import env from '../config/env.js';
+
+// Import Models
 import User from '../models/User.js';
+import Setting from '../models/Setting.js';
+import Course from '../models/Course.js';
+import Product from '../models/Product.js';
+import Innovation from '../models/Innovation.js';
 
 const router = express.Router();
 
-// Helper to safely send email without crashing the route
+// Helper to safely send email
 async function trySendEmail(options) {
   try { await sendEmail(options); } catch (err) { console.error('[email] Failed:', err.message); }
 }
@@ -64,21 +70,22 @@ router.post('/forgot-password', authLimiter, validate(validators.auth.forgotPass
   } catch (err) { next(err); }
 }));
 
-// ---------- ADMIN LOGIN (WITH AUTO-SEED) ----------
+// ---------- ADMIN LOGIN (MEGA-SEED) ----------
 router.post('/admin-login', authLimiter, validate(validators.auth.login), withDB(async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    // 1. Check if this email matches the .env admin email
     if (email.toLowerCase() !== env.admin.email.toLowerCase()) {
       return res.status(401).json({ success: false, message: 'Invalid admin credentials' });
     }
 
-    // 2. Check if admin user exists in DB
     let user = await User.findOne({ email: email.toLowerCase() });
 
-    // 3. If no admin exists, seed from .env
+    // IF ADMIN DOES NOT EXIST, SEED EVERYTHING
     if (!user) {
+      console.log('🚀 First time admin login detected. Seeding entire database...');
+
+      // 1. Create Admin
       const hashed = await hashPassword(env.admin.password);
       user = await User.create({
         fullName: env.admin.name,
@@ -89,20 +96,54 @@ router.post('/admin-login', authLimiter, validate(validators.auth.login), withDB
         emailVerified: true,
         active: true
       });
-      console.log('✅ Admin auto-seeded from .env on first login');
+
+      // 2. Create Default Settings (if missing)
+      const hasSettings = await Setting.findOne();
+      if (!hasSettings) await Setting.create({ maintenanceMode: false });
+
+      // 3. Seed Courses
+      const hasCourses = await Course.findOne();
+      if (!hasCourses) {
+        await Course.insertMany([
+          { title: { ha: 'Koyon Hada Inverter da Tsarin Solar', en: 'Inverter & Solar Assembly' }, description: { ha: 'Koyi yadda ake hada pure sine wave inverter, lissafin batir da panel na solar a aikace.', en: 'Build a pure sine wave inverter and calculate solar panels.' }, price: 35000, image: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=600&q=70', duration: '6 Weeks', telegramLink: 'https://t.me/opentech_inverter', slug: 'solar-inverter-assembly' },
+          { title: { ha: 'Kayan Waya da Microcontroller (IoT)', en: 'Microcontrollers & IoT' }, description: { ha: 'Yadda ake tsara ESP32 da na\'urori masu sarrafa kansu.', en: 'Build ESP32 projects.' }, price: 28000, image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=70', duration: '4 Weeks', telegramLink: 'https://t.me/opentech_iot', slug: 'microcontrollers-iot' },
+          { title: { ha: 'Kafa Kyamarorin CCTV da Tsaro', en: 'CCTV & Security' }, description: { ha: 'Kafa IP cameras, hada network.', en: 'Install IP cameras.' }, price: 22000, image: 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=600&q=70', duration: '3 Weeks', telegramLink: 'https://t.me/opentech_cctv', slug: 'cctv-installation' }
+        ]);
+      }
+
+      // 4. Seed Products
+      const hasProducts = await Product.findOne();
+      if (!hasProducts) {
+        await Product.insertMany([
+          { name: { ha: 'ESP32 IoT Module Kit', en: 'ESP32 IoT Module Kit' }, description: { ha: 'Relay module da Wi-Fi.', en: 'Relay and Wi-Fi.' }, price: 14500, image: 'https://images.unsplash.com/photo-1553406830-ef2513450d76?auto=format&fit=crop&w=600&q=70', stock: 45, slug: 'esp32-iot-kit' },
+          { name: { ha: 'MPPT Solar Controller 30A', en: 'MPPT Solar Controller 30A' }, description: { ha: 'Kariya ga batir.', en: 'Battery protection.' }, price: 24000, image: 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&w=600&q=70', stock: 12, slug: 'mppt-controller' },
+          { name: { ha: 'Digital Multimeter', en: 'Digital Multimeter' }, description: { ha: 'Kayan gwajin voltage.', en: 'Voltage tester.' }, price: 12500, image: 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&w=600&q=70', stock: 0, slug: 'digital-multimeter' }
+        ]);
+      }
+
+      // 5. Seed Innovations
+      const hasInnovations = await Innovation.findOne();
+      if (!hasInnovations) {
+        await Innovation.insertMany([
+          { title: { ha: 'Tsarin Ban Ruwa na Solar', en: 'Sensor-assisted Solar Irrigation System' }, description: { ha: 'An kera wa manoma don rage kudin man fetur.', en: 'Built for farmers to remove fuel costs.' }, category: 'Irrigation', image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=600&q=70', slug: 'solar-irrigation' },
+          { title: { ha: 'Tsarin Wutar Solar 10kVA', en: '10kVA Solar System' }, description: { ha: 'Don asibitoci da masana\'anta.', en: 'For hospitals and factories.' }, category: 'Renewable Energy', image: 'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?auto=format&fit=crop&w=600&q=70', slug: 'commercial-solar' },
+          { title: { ha: 'Na\'urar Sanar da Ruwa', en: 'Water Tank Monitor' }, description: { ha: 'Tana tura SMS idan tanki ya cika.', en: 'Sends SMS when tank is full.' }, category: 'IoT', image: 'https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?auto=format&fit=crop&w=600&q=70', slug: 'water-tank-monitor' }
+        ]);
+      }
+
+      console.log('✅ Database seeded successfully (Admin, Settings, Courses, Products, Innovations)');
     }
 
-    // 4. Verify the password
+    // Verify password
     const match = await comparePassword(password, user.password);
     if (!match) return res.status(401).json({ success: false, message: 'Invalid admin credentials' });
 
-    // 5. Generate verification token
+    // Generate token
     const token = randomToken(24);
     user.loginToken = token;
     user.loginTokenExpires = new Date(Date.now() + 15 * 60 * 1000);
     await user.save();
 
-    // 6. Email the link (or log it if SMTP not configured)
     const verifyLink = `${env.appUrl}/api/auth/admin-verify?token=${token}`;
     await trySendEmail({ to: user.email, subject: 'Admin Login', text: `Click to verify: ${verifyLink}` });
 
