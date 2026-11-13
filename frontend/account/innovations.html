@@ -3,63 +3,25 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Requests — OpenTech</title>
+  <title>My Account — OpenTech</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <!-- ROOT RELATIVE PATHS (Will always work) -->
   <link rel="stylesheet" href="/css/base.css" />
   <link rel="stylesheet" href="/css/layout.css" />
   <link rel="stylesheet" href="/css/components.css" />
   <link rel="stylesheet" href="/css/pages.css" />
 </head>
 <body>
-  <main class="section" style="max-width: 900px; margin: 0 auto;">
-    <div class="flex items-center gap-3 mb-4 p-4" style="background:var(--color-card); border:1px solid var(--color-border); border-radius:var(--radius-lg);">
-      <div class="w-10 h-10 rounded-full flex items-center justify-center text-gold font-bold" style="background:rgba(198,160,82,0.2); border:1px solid var(--color-gold);"><i class="fa-solid fa-user"></i></div>
-      <div style="flex:1;"><div class="font-bold text-white account-name">Loading...</div></div>
-    </div>
+  <main class="section" style="max-width: 900px; margin: 0 auto; padding-top: 40px;">
     <div id="accountNav"></div>
-    
-    <div id="panel-innovations" class="tab-panel mt-4">
-      <div class="flex justify-between items-center mb-3">
-        <h2 class="section__title mb-0">My Requests</h2>
-        <a href="/innovations" class="btn btn--primary btn--sm"><i class="fa-solid fa-plus"></i> New Request</a>
-      </div>
-      <div id="requestsList" class="flex-col gap-4">
-        <div class="skeleton skeleton--card"></div>
-      </div>
-    </div>
+    <div id="accountContent" class="mt-4"></div>
   </main>
+  
   <script src="/js/core.js"></script>
   <script src="/js/account.js"></script>
-  <script>
-    (async function() {
-      const container = document.getElementById('requestsList');
-      try {
-        const res = await App.api.get('/innovations/requests/mine');
-        if (!res.data || res.data.length === 0) {
-          container.innerHTML = App.render.empty('fa-microchip', 'No requests yet.');
-          return;
-        }
-        container.innerHTML = res.data.map(req => `
-          <div class="card p-4 mb-4">
-            <div class="flex justify-between items-center border-b border-surface-border pb-3 mb-3">
-              <div>
-                <span class="text-muted text-xs block">Request ID</span>
-                <span class="font-bold text-white">#${req.requestNumber}</span>
-              </div>
-              <span class="badge ${req.status === 'completed' ? 'badge--success' : req.status === 'cancelled' ? 'badge--error' : 'badge--gold'}">${req.status.toUpperCase()}</span>
-            </div>
-            <h3 class="font-bold text-white mb-1">${req.title}</h3>
-            <p class="text-muted text-xs mb-3">${req.description}</p>
-            <div class="flex justify-between items-center p-3" style="background:var(--color-elevated); border-radius:8px; font-size:12px;">
-              <span class="text-muted">Budget: <strong class="text-white">${req.budget ? App.naira(req.budget) : 'N/A'}</strong></span>
-              <span class="text-muted">${new Date(req.createdAt).toLocaleDateString()}</span>
-            </div>
-          </div>
-        `).join('');
-      } catch (err) {
-        container.innerHTML = App.render.empty('fa-exclamation-circle', 'Please login to view requests.');
-      }
-    })();
-  </script>
+  <script src="/js/account-innovations.js"></script>
 </body>
 </html>

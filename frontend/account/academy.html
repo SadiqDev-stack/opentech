@@ -3,68 +3,25 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Academy — OpenTech</title>
+  <title>My Account — OpenTech</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <!-- ROOT RELATIVE PATHS (Will always work) -->
   <link rel="stylesheet" href="/css/base.css" />
   <link rel="stylesheet" href="/css/layout.css" />
   <link rel="stylesheet" href="/css/components.css" />
   <link rel="stylesheet" href="/css/pages.css" />
 </head>
 <body>
-  <main class="section" style="max-width: 900px; margin: 0 auto;">
-    <div class="flex items-center gap-3 mb-4 p-4" style="background:var(--color-card); border:1px solid var(--color-border); border-radius:var(--radius-lg);">
-      <div class="w-10 h-10 rounded-full flex items-center justify-center text-gold font-bold" style="background:rgba(198,160,82,0.2); border:1px solid var(--color-gold);"><i class="fa-solid fa-user"></i></div>
-      <div style="flex:1;"><div class="font-bold text-white account-name">Loading...</div></div>
-    </div>
+  <main class="section" style="max-width: 900px; margin: 0 auto; padding-top: 40px;">
     <div id="accountNav"></div>
-    
-    <div id="panel-academy" class="tab-panel mt-4">
-      <h2 class="section__title mb-4">My Academy</h2>
-      <div id="academyList" class="flex-col gap-4">
-        <div class="skeleton skeleton--card"></div>
-      </div>
-    </div>
+    <div id="accountContent" class="mt-4"></div>
   </main>
-
+  
   <script src="/js/core.js"></script>
   <script src="/js/account.js"></script>
-  <script>
-    (async function() {
-      const ref = new URLSearchParams(window.location.search).get('verify');
-      if (ref) {
-        App.notify.info('Verifying payment...');
-        try {
-          await App.api.post('/enrollments/verify', { reference: ref });
-          App.notify.success('Enrollment confirmed!');
-          window.history.replaceState({}, document.title, window.location.pathname);
-        } catch (err) { App.notify.error('Verification failed'); }
-      }
-
-      const container = document.getElementById('academyList');
-      try {
-        const res = await App.api.get('/enrollments/mine');
-        if (!res.data || res.data.length === 0) {
-          container.innerHTML = App.render.empty('fa-graduation-cap', 'No courses enrolled yet.');
-          return;
-        }
-        container.innerHTML = res.data.map(item => {
-          const c = item.course;
-          const title = c.title[App.i18n.lang] || c.title.ha;
-          return `
-          <div class="card p-4 mb-4" style="display:flex; flex-direction:row; gap:16px; align-items:center; flex-wrap:wrap;">
-            <img src="${c.image}" style="width:100px; height:100px; border-radius:8px; object-fit:cover;" />
-            <div style="flex:1; min-width:200px;">
-              <h3 class="font-bold text-white mb-1">${title}</h3>
-              <p class="text-muted text-xs mb-3">${c.duration}</p>
-              ${c.telegramLink ? `<a href="${c.telegramLink}" target="_blank" class="btn btn--primary btn--sm"><i class="fa-brands fa-telegram"></i> Join Telegram Group</a>` : '<span class="text-muted text-xs">No group link provided</span>'}
-            </div>
-          </div>
-          `;
-        }).join('');
-      } catch (err) {
-        container.innerHTML = App.render.empty('fa-exclamation-circle', 'Please login to view your courses.');
-      }
-    })();
-  </script>
+  <script src="/js/account-academy.js"></script>
 </body>
 </html>
