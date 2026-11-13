@@ -105,7 +105,14 @@ const App = (() => {
       root.querySelectorAll('[data-i18n]').forEach((el) => { const val = i18n.t(el.getAttribute('data-i18n')); if (val) el.textContent = val; });
       root.querySelectorAll('[data-i18n-attr]').forEach((el) => { const [attr, key] = el.getAttribute('data-i18n-attr').split(':'); const val = i18n.t(key); if (val && attr) el.setAttribute(attr, val); });
     },
-    updateSwitch() { const el = document.getElementById('langCurrentText'); if (el) el.textContent = i18n.lang === 'ha' ? 'HAUSA' : 'ENGLISH'; },
+    updateSwitch() {
+      const el = document.getElementById('langCurrentText');
+      if (el) {
+        const isMobile = window.innerWidth < 500;
+        if (i18n.lang === 'ha') el.textContent = isMobile ? 'HA' : 'HAUSA';
+        else el.textContent = isMobile ? 'EN' : 'ENGLISH';
+      }
+    },
     toggle() { return i18n.set(i18n.lang === 'ha' ? 'en' : 'ha'); }
   };
 
@@ -136,7 +143,6 @@ const App = (() => {
     }
   };
 
-  // ---------- GLOBAL CHECKOUT MODAL ----------
   function ensureCheckoutModal() {
     let el = document.getElementById('globalCheckoutModal');
     if (el) return el;
@@ -187,6 +193,7 @@ const App = (() => {
     const isStore = path.includes('store');
     const isInno = path.includes('innovations');
 
+    // LANGUAGE BUTTON IS BACK IN THE HEADER
     const headerHTML = `
       <header class="site-header">
         <div class="site-header__inner">
@@ -201,6 +208,10 @@ const App = (() => {
             <a href="/innovations" class="header-nav__link ${isInno ? 'active' : ''}"><i class="fa-solid fa-microchip"></i><span data-i18n="nav_projects">Ayyukanmu</span></a>
           </nav>
           <div class="header-actions">
+            <button id="langToggleBtn" class="lang-pill" type="button" aria-label="Switch language">
+              <i class="fa-solid fa-language"></i>
+              <span id="langCurrentText">HAUSA</span>
+            </button>
             <a href="/cart" class="icon-btn" aria-label="Cart"><i class="fa-solid fa-cart-shopping"></i><span class="cart-badge" data-cart-count style="display:none">0</span></a>
             <button id="accountBtn" class="icon-btn" aria-label="Account"><i class="fa-solid fa-user"></i></button>
             <button class="icon-btn menu-toggle" id="menuToggleBtn" aria-label="Menu"><i class="fa-solid fa-bars"></i></button>
@@ -216,7 +227,6 @@ const App = (() => {
             <a href="/store" class="sidebar-link ${isStore ? 'active' : ''}"><i class="fa-solid fa-store"></i> <span data-i18n="nav_store">Shago</span></a>
             <a href="/innovations" class="sidebar-link ${isInno ? 'active' : ''}"><i class="fa-solid fa-microchip"></i> <span data-i18n="nav_projects">Ayyukanmu</span></a>
             <div style="margin:16px 0; height:1px; background:var(--color-border);"></div>
-            <button class="sidebar-link" id="mobileLangBtn" style="border:none; background:none; text-align:left; cursor:pointer;"><i class="fa-solid fa-language"></i> <span id="mobileLangText">HAUSA / ENGLISH</span></button>
             <a href="/account" class="sidebar-link"><i class="fa-solid fa-user"></i> <span data-i18n="nav_account">Asusuna</span></a>
           </nav>
         </div>
@@ -240,6 +250,9 @@ const App = (() => {
 
     modal.bind(); cart.updateBadge();
 
+    const langBtn = document.getElementById('langToggleBtn');
+    if (langBtn) langBtn.addEventListener('click', () => i18n.toggle());
+
     const menuBtn = document.getElementById('menuToggleBtn');
     const closeSidebarBtn = document.getElementById('closeSidebarBtn');
     const sidebarOverlay = document.getElementById('sidebarOverlay');
@@ -248,9 +261,6 @@ const App = (() => {
       closeSidebarBtn.addEventListener('click', () => sidebarOverlay.classList.remove('is-open'));
       sidebarOverlay.addEventListener('click', (e) => { if (e.target === sidebarOverlay) sidebarOverlay.classList.remove('is-open'); });
     }
-
-    const mobileLangBtn = document.getElementById('mobileLangBtn');
-    if (mobileLangBtn) mobileLangBtn.addEventListener('click', () => i18n.toggle());
 
     const accountBtn = document.getElementById('accountBtn');
     if (accountBtn) {

@@ -1,6 +1,5 @@
 /* ============================================================
    OpenTech — pages.css
-   Page-specific rules. Homepage first.
    ============================================================ */
 
 /* ----- Hero ----- */
@@ -44,25 +43,39 @@
   overflow: hidden;
   border: 1px solid var(--color-border);
   position: relative;
+  width: 100%;
+  height: 220px;
 }
 .banner__img {
   width: 100%;
-  height: 200px;
+  height: 100%;
   object-fit: cover;
+  object-position: center;
   display: block;
+  /* No blur or transform on mobile */
 }
+
+/* Desktop: Add slight blur to hide low-res grain */
 @media (min-width: 768px) {
-  .banner__img { height: 320px; } /* Prevents the image from becoming a tall stretched mess */
+  .banner { height: 320px; }
+  .banner__img {
+    filter: blur(3px) brightness(0.7); /* Very subtle blur */
+    transform: scale(1.02); /* Just enough to hide edges */
+  }
 }
+
 .banner__caption {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 10px 14px;
-  background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);
-  font-size: 12px;
+  padding: 16px;
+  background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+  font-size: 13px;
+  font-weight: 600;
   color: var(--color-white);
+  text-align: left;
+  z-index: 10;
 }
 
 /* ----- Innovation highlight ----- */
@@ -71,13 +84,15 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 .innovation-card__media {
   height: 180px;
   position: relative;
   background: var(--color-elevated);
 }
-@media (min-width: 768px) { .innovation-card__media { height: 280px; } }
+@media (min-width: 768px) { .innovation-card__media { height: 220px; } }
 .innovation-card__media img { width: 100%; height: 100%; object-fit: cover; }
 .innovation-card__tag {
   position: absolute;
@@ -91,11 +106,9 @@
   font-size: 11px;
   font-weight: 600;
 }
-.innovation-card__body { padding: var(--space-md); }
-.innovation-card__title { font-family: var(--font-heading); font-size: 15px; font-weight: 700; margin-bottom: 6px; }
-@media (min-width: 768px) { .innovation-card__title { font-size: 20px; } }
-.innovation-card__desc { font-size: 12px; color: var(--color-muted); line-height: 1.5; margin-bottom: var(--space-md); }
-@media (min-width: 768px) { .innovation-card__desc { font-size: 14px; } }
+.innovation-card__body { padding: var(--space-md); display: flex; flex-direction: column; flex: 1; }
+.innovation-card__title { font-family: var(--font-heading); font-size: 15px; font-weight: 700; margin-bottom: 6px; color: var(--color-white); }
+.innovation-card__desc { font-size: 12px; color: var(--color-muted); line-height: 1.5; margin-bottom: var(--space-md); flex: 1; }
 
 /* ----- About section ----- */
 .about {
@@ -116,7 +129,7 @@
   background: var(--color-elevated);
 }
 .about__role { font-size: 10px; color: var(--color-gold); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; }
-.about__name { font-family: var(--font-heading); font-size: 16px; font-weight: 700; }
+.about__name { font-family: var(--font-heading); font-size: 16px; font-weight: 700; color: var(--color-white); }
 .about__bio { font-size: 12px; color: var(--color-muted); margin-top: 2px; }
 .about__text { font-size: 13px; color: var(--color-muted); line-height: 1.6; margin-bottom: var(--space-md); max-width: 800px; }
 .about__stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -131,7 +144,7 @@
 .stat__value { font-family: var(--font-heading); font-weight: 800; font-size: 20px; color: var(--color-gold); display: block; }
 .stat__label { font-size: 11px; color: var(--color-muted); }
 
-/* ----- Team section ----- */
+/* ----- Team Section ----- */
 .team {
   padding: var(--space-lg) var(--page-margin);
   border-bottom: 1px solid var(--color-border);
@@ -142,44 +155,52 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: var(--space-md);
+  margin-top: var(--space-md);
 }
-@media (min-width: 768px) { .team-grid { grid-template-columns: repeat(4, 1fr); } }
+@media (min-width: 768px) {
+  .team-grid { grid-template-columns: repeat(4, 1fr); gap: var(--space-lg); }
+}
 .team-card {
   background: var(--color-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  padding: var(--space-md);
+  padding: var(--space-lg) var(--space-md);
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 .team-avatar {
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 12px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid var(--color-border);
-  background: var(--color-elevated);
+  width: 80px !important;
+  height: 80px !important;
+  min-width: 80px !important;
+  min-height: 80px !important;
+  max-width: 80px !important;
+  max-height: 80px !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  border: 2px solid var(--color-gold);
+  margin-bottom: 12px;
+  display: block;
 }
-.team-name { font-family: var(--font-heading); font-weight: 700; font-size: 14px; color: var(--color-white); margin-bottom: 4px; }
-.team-role { font-size: 11px; color: var(--color-gold); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
-
-/* ----- Contact CTA ----- */
-.contact-cta {
-  margin: var(--space-lg) var(--page-margin);
-  padding: var(--space-lg) var(--space-md);
-  background: var(--color-elevated);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
+.team-name {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--color-white);
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+.team-role {
+  font-size: 12px;
+  color: var(--color-gold);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
   text-align: center;
-  max-width: var(--container-max);
+  text-transform: none;
 }
-@media (min-width: 900px) {
-  .contact-cta { margin: var(--space-xl) auto; max-width: 800px; }
-}
-.contact-cta__icon { font-size: 28px; color: var(--color-gold); margin-bottom: 8px; }
-.contact-cta__title { font-family: var(--font-heading); font-size: 16px; font-weight: 700; margin-bottom: 6px; }
-.contact-cta__text { font-size: 12px; color: var(--color-muted); margin-bottom: var(--space-md); line-height: 1.5; }
-.contact-cta__actions { display: flex; flex-direction: column; gap: 8px; max-width: 320px; margin: 0 auto; }
 
 /* ----- Why Choose Us ----- */
 .why-choose {
@@ -269,4 +290,58 @@
 .about-full__logo {
   max-width: 160px;
   margin: 0 auto;
+}
+
+/* ----- Contact CTA ----- */
+.contact-cta {
+  margin: var(--space-lg) var(--page-margin);
+  padding: var(--space-lg) var(--space-md);
+  background: var(--color-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  text-align: center;
+  max-width: var(--container-max);
+}
+@media (min-width: 900px) {
+  .contact-cta { margin: var(--space-xl) auto; max-width: 800px; }
+}
+.contact-cta__icon { font-size: 28px; color: var(--color-gold); margin-bottom: 8px; }
+.contact-cta__title { font-family: var(--font-heading); font-size: 16px; font-weight: 700; margin-bottom: 6px; color: var(--color-white); }
+.contact-cta__text { font-size: 12px; color: var(--color-muted); margin-bottom: var(--space-md); line-height: 1.5; }
+.contact-cta__actions { display: flex; flex-direction: column; gap: 8px; max-width: 320px; margin: 0 auto; }
+
+/* ----- Footer ----- */
+.site-footer {
+  background: var(--color-elevated);
+  border-top: 1px solid var(--color-border);
+  padding: var(--space-xl) var(--page-margin);
+  margin-top: var(--space-section);
+  text-align: center;
+}
+.site-footer__brand {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 18px;
+  color: var(--color-white);
+  margin-bottom: 8px;
+}
+.site-footer__brand span { color: var(--color-gold); }
+.site-footer__tagline {
+  font-size: 12px;
+  color: var(--color-muted);
+  margin-bottom: var(--space-md);
+}
+.site-footer__links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-md);
+  font-size: 12px;
+  color: var(--color-muted);
+  margin-bottom: var(--space-md);
+}
+.site-footer__links a:hover { color: var(--color-gold); }
+.site-footer__copyright {
+  font-size: 11px;
+  color: var(--color-muted);
 }

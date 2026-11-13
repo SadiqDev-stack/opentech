@@ -11,11 +11,12 @@ import User from '../models/User.js';
 
 const router = express.Router();
 
-// Safe email wrapper so login never crashes
+// Helper to safely send email without crashing the route
 async function trySendEmail(options) {
   try { await sendEmail(options); } catch (err) { console.error('[email] Failed:', err.message); }
 }
 
+// ---------- REGISTER ----------
 router.post('/register', authLimiter, validate(validators.auth.register), withDB(async (req, res, next) => {
   try {
     const { fullName, email, phone, password } = req.body;
@@ -29,6 +30,7 @@ router.post('/register', authLimiter, validate(validators.auth.register), withDB
   } catch (err) { next(err); }
 }));
 
+// ---------- LOGIN ----------
 router.post('/login', authLimiter, validate(validators.auth.login), withDB(async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -43,10 +45,13 @@ router.post('/login', authLimiter, validate(validators.auth.login), withDB(async
   } catch (err) { next(err); }
 }));
 
+// ---------- LOGOUT ----------
 router.post('/logout', (req, res) => { res.clearCookie(env.cookieName); res.json({ success: true, message: 'Logged out' }); });
 
+// ---------- ME ----------
 router.get('/me', requireAuth, (req, res) => res.json({ success: true, data: { user: req.user.toSafeJSON() } }));
 
+// ---------- FORGOT PASSWORD ----------
 router.post('/forgot-password', authLimiter, validate(validators.auth.forgotPassword), withDB(async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -59,23 +64,53 @@ router.post('/forgot-password', authLimiter, validate(validators.auth.forgotPass
   } catch (err) { next(err); }
 }));
 
+// ---------- ADMIN LOGIN (WITH AUTO-SEED) ----------
 router.post('/admin-login', authLimiter, validate(validators.auth.login), withDB(async (req, res, next) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email: email.toLowerCase(), role: 'admin' });
-    if (!user) return res.status(401).json({ success: false, message: 'Invalid admin credentials' });
+
+    // 1. Check if this email matches the .env admin email
+    if (email.toLowerCase() !== env.admin.email.toLowerCase()) {
+      return res.status(401).json({ success: false, message: 'Invalid admin credentials' });
+    }
+
+    // 2. Check if admin user exists in DB
+    let user = await User.findOne({ email: email.toLowerCase() });
+
+    // 3. If no admin exists, seed from .env
+    if (!user) {
+      const hashed = await hashPassword(env.admin.password);
+      user = await User.create({
+        fullName: env.admin.name,
+        email: env.admin.email.toLowerCase(),
+        phone: '',
+        password: hashed,
+        role: 'admin',
+        emailVerified: true,
+        active: true
+      });
+      console.log('✅ Admin auto-seeded from .env on first login');
+    }
+
+    // 4. Verify the password
     const match = await comparePassword(password, user.password);
     if (!match) return res.status(401).json({ success: false, message: 'Invalid admin credentials' });
+
+    // 5. Generate verification token
     const token = randomToken(24);
     user.loginToken = token;
     user.loginTokenExpires = new Date(Date.now() + 15 * 60 * 1000);
     await user.save();
+
+    // 6. Email the link (or log it if SMTP not configured)
     const verifyLink = `${env.appUrl}/api/auth/admin-verify?token=${token}`;
     await trySendEmail({ to: user.email, subject: 'Admin Login', text: `Click to verify: ${verifyLink}` });
+
     res.json({ success: true, message: 'Verification link sent to your email.' });
   } catch (err) { next(err); }
 }));
 
+// ---------- ADMIN VERIFY ----------
 router.get('/admin-verify', withDB(async (req, res, next) => {
   try {
     const { token } = req.query;
