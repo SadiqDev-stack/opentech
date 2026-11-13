@@ -1,8 +1,8 @@
 (async function () {
   await App.i18n.init(); App.injectChrome();
   const grid = document.getElementById('coursesGrid');
+  if (!grid) return;
   const searchInput = document.getElementById('courseSearch');
-  const enrollModal = document.getElementById('enrollModal');
   const enrollForm = document.getElementById('enrollForm');
   let allCourses = [];
 
@@ -12,9 +12,7 @@
       const res = await App.api.get(`/courses?search=${query}`);
       allCourses = res.data || [];
       renderCourses(allCourses);
-    } catch (err) {
-      grid.innerHTML = App.render.empty('fa-exclamation-triangle', 'Error loading courses. Check DB connection.');
-    }
+    } catch (err) { grid.innerHTML = App.render.empty('fa-exclamation-triangle', 'Error loading courses.'); }
   }
 
   function renderCourses(courses) {
@@ -39,26 +37,26 @@
     document.querySelectorAll('[data-enroll]').forEach(btn => {
       btn.addEventListener('click', () => {
         const course = allCourses.find(c => c._id === btn.dataset.enroll);
-        if (course) openEnrollModal(course);
+        if (course && document.getElementById('enrollModal')) {
+          document.getElementById('modalCourseName').textContent = course.title[App.i18n.lang] || course.title.ha;
+          document.getElementById('modalCourseId').value = course._id;
+          document.getElementById('modalCoursePrice').textContent = App.naira(course.price);
+          App.modal.open('enrollModal');
+        }
       });
     });
   }
 
-  function openEnrollModal(course) {
-    document.getElementById('modalCourseName').textContent = course.title[App.i18n.lang] || course.title.ha;
-    document.getElementById('modalCourseId').value = course._id;
-    document.getElementById('modalCoursePrice').textContent = App.naira(course.price);
-    App.modal.open('enrollModal');
+  if (enrollForm) {
+    enrollForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await App.form.submit(enrollForm, async (data) => {
+        const res = await App.api.post('/enrollments/checkout', data);
+        window.location.href = res.data.authorization_url;
+      });
+    });
   }
 
-  enrollForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    await App.form.submit(enrollForm, async (data) => {
-      const res = await App.api.post('/enrollments/checkout', data);
-      window.location.href = res.data.authorization_url;
-    });
-  });
-
-  searchInput.addEventListener('input', (e) => { clearTimeout(window.searchTimeout); window.searchTimeout = setTimeout(() => loadCourses(e.target.value), 300); });
+  if (searchInput) searchInput.addEventListener('input', (e) => { clearTimeout(window.searchTimeout); window.searchTimeout = setTimeout(() => loadCourses(e.target.value), 300); });
   loadCourses();
 })();

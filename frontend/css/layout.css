@@ -118,3 +118,9 @@ main {
 .grid-3 { display: grid; grid-template-columns: repeat(1, 1fr); gap: var(--space-md); }
 @media (min-width: 640px) { .grid-3 { grid-template-columns: repeat(2, 1fr); } }
 @media (min-width: 900px) { .grid-3 { grid-template-columns: repeat(3, 1fr); } .grid-2 { grid-template-columns: repeat(3, 1fr); } } /* Make products same size as courses */
+
+/* Mobile: Hide lang & account from header, move to sidebar */
+@media (max-width: 899px) {
+  .lang-pill { display: none !important; }
+  #accountBtn { display: none !important; }
+}

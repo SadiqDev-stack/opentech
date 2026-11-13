@@ -12,24 +12,18 @@
     <div id="cartItems" class="flex-col gap-3"></div>
     <div id="cartSummary" class="mt-4 hidden" style="background:var(--color-card); border:1px solid var(--color-border); border-radius:var(--radius-lg); padding:16px;">
       <div class="flex justify-between mb-2"><span class="text-muted">Subtotal</span><span id="cartSubtotal" class="text-gold font-bold">₦0</span></div>
-      <button class="btn btn--primary btn--block mt-4" onclick="checkoutAll()">Purchase All</button>
+      <button class="btn btn--primary btn--block mt-4" onclick="purchaseAll()">Purchase All</button>
     </div>
   </main>
   <script src="/js/core.js"></script>
   <script>
     App.injectChrome();
-
     function renderCart() {
       const items = App.cart.get();
       const container = document.getElementById('cartItems');
       const summary = document.getElementById('cartSummary');
       const subtotalEl = document.getElementById('cartSubtotal');
-
-      if (items.length === 0) {
-        container.innerHTML = App.render.empty('fa-cart-shopping', 'Your cart is empty.');
-        summary.classList.add('hidden'); return;
-      }
-
+      if (items.length === 0) { container.innerHTML = App.render.empty('fa-cart-shopping', 'Your cart is empty.'); summary.classList.add('hidden'); return; }
       let total = 0;
       container.innerHTML = items.map((item) => {
         total += item.price * item.qty;
@@ -42,6 +36,7 @@
             <span class="text-white font-bold" style="min-width:20px; text-align:center;">${item.qty}</span>
             <button class="btn btn--ghost" style="padding:4px 8px;" onclick="updateQty('${item.id}', 1)"><i class="fa-solid fa-plus"></i></button>
           </div>
+          <button class="btn btn--primary btn--sm" onclick="buyThis('${item.id}')">Buy This</button>
           <button class="btn btn--outline btn--sm" onclick="removeItem('${item.id}')" style="color:var(--color-error-text); border-color:rgba(211,47,47,0.3);"><i class="fa-solid fa-trash"></i></button>
         </div>`;
       }).join('');
@@ -51,8 +46,17 @@
 
     window.updateQty = (id, delta) => { App.cart.updateQty(id, delta); renderCart(); };
     window.removeItem = (id) => { App.cart.remove(id); renderCart(); };
-    window.checkoutAll = () => { window.location.href = '/store?checkout=true'; };
-
+    window.buyThis = (id) => {
+      const item = App.cart.get().find(x => x.id === id);
+      if (item) App.openGlobalCheckout([{ productId: item.id, quantity: item.qty }], item.price * item.qty);
+    };
+    window.purchaseAll = () => {
+      const cart = App.cart.get();
+      if (cart.length === 0) return App.notify.warning('Cart is empty');
+      const items = cart.map(c => ({ productId: c.id, quantity: c.qty }));
+      const total = cart.reduce((s, c) => s + (c.price * c.qty), 0);
+      App.openGlobalCheckout(items, total);
+    };
     renderCart();
   </script>
 </body>

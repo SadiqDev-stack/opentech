@@ -1,16 +1,12 @@
 import express from 'express';
 import { generateUploadSignature } from '../services/cloud.service.js';
-
 const router = express.Router();
 
-// GET /api/uploads/signature (No auth required for public forms)
-router.get('/signature', (req, res, next) => {
+// Signature is public — allows anonymous project requests & reports
+router.get('/signature', (req, res) => {
   try {
-    const signatureData = generateUploadSignature();
-    res.json({ success: true, data: signatureData });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
+    res.json({ success: true, data: generateUploadSignature() });
+  } catch (err) { res.status(500).json({ success: false, message: err.message }); }
 });
 
 export default router;

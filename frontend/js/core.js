@@ -7,21 +7,13 @@ const App = (() => {
     if (body !== undefined && !(body instanceof FormData)) {
       fetchOptions.headers['Content-Type'] = 'application/json';
       fetchOptions.body = JSON.stringify(body);
-    } else if (body instanceof FormData) {
-      fetchOptions.body = body;
-    }
+    } else if (body instanceof FormData) { fetchOptions.body = body; }
     try {
       const res = await fetch(url, fetchOptions);
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        const err = new Error(data.message || `Request failed (${res.status})`);
-        err.status = res.status; err.data = data; throw err;
-      }
+      if (!res.ok) { const err = new Error(data.message || `Request failed (${res.status})`); err.status = res.status; err.data = data; throw err; }
       return data;
-    } catch (err) {
-      if (!err.status) err.message = err.message || 'Network error';
-      throw err;
-    }
+    } catch (err) { if (!err.status) err.message = err.message || 'Network error'; throw err; }
   }
 
   const api = {
@@ -43,18 +35,15 @@ const App = (() => {
 
   let toastTimer = null;
   function notify(message, type = 'info') {
-    const host = ensureToastHost();
-    const toastEl = host.querySelector('.toast');
-    const msgEl = host.querySelector('.toast__msg');
-    const iconEl = host.querySelector('i');
+    const host = ensureToastHost(); const toastEl = host.querySelector('.toast');
+    const msgEl = host.querySelector('.toast__msg'); const iconEl = host.querySelector('i');
     toastEl.classList.remove('toast--success', 'toast--error', 'toast--warning');
     if (type === 'success') { toastEl.classList.add('toast--success'); iconEl.className = 'fa-solid fa-circle-check'; }
     else if (type === 'error') { toastEl.classList.add('toast--error'); iconEl.className = 'fa-solid fa-circle-exclamation'; }
     else if (type === 'warning') { toastEl.classList.add('toast--warning'); iconEl.className = 'fa-solid fa-triangle-exclamation'; }
     else { iconEl.className = 'fa-solid fa-circle-info'; }
     msgEl.textContent = message;
-    host.classList.add('is-visible');
-    clearTimeout(toastTimer);
+    host.classList.add('is-visible'); clearTimeout(toastTimer);
     toastTimer = setTimeout(() => host.classList.remove('is-visible'), 4000);
   }
   notify.success = (m) => notify(m, 'success');
@@ -78,8 +67,7 @@ const App = (() => {
   const form = {
     async submit(formEl, handler) {
       if (!formEl) return;
-      const submitBtn = formEl.querySelector('[type="submit"]');
-      const originalHTML = submitBtn ? submitBtn.innerHTML : null;
+      const submitBtn = formEl.querySelector('[type="submit"]'); const originalHTML = submitBtn ? submitBtn.innerHTML : null;
       if (submitBtn) { submitBtn.disabled = true; submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; }
       try { const formData = new FormData(formEl); await handler(Object.fromEntries(formData.entries()), formEl); }
       catch (err) { notify.error(err.message || 'Something went wrong'); }
@@ -130,18 +118,11 @@ const App = (() => {
       if (found) found.qty += 1; else items.push({ ...item, qty: 1 });
       cart.save(items); notify.success((i18n.lang === 'ha' ? 'An saka a keken: ' : 'Added to cart: ') + item.name);
     },
-    updateQty(id, delta) {
-      const items = cart.get(); const item = items.find(i => i.id === id);
-      if (item) { item.qty += delta; if (item.qty <= 0) cart.remove(id); else cart.save(items); }
-    },
+    updateQty(id, delta) { const items = cart.get(); const item = items.find(i => i.id === id); if (item) { item.qty += delta; if (item.qty <= 0) cart.remove(id); else cart.save(items); } },
     remove(id) { cart.save(cart.get().filter((i) => i.id !== id)); },
     clear() { cart.save([]); },
     count() { return cart.get().reduce((s, i) => s + i.qty, 0); },
-    updateBadge() {
-      document.querySelectorAll('[data-cart-count]').forEach((el) => {
-        const c = cart.count(); el.textContent = c; el.style.display = c > 0 ? '' : 'none';
-      });
-    }
+    updateBadge() { document.querySelectorAll('[data-cart-count]').forEach((el) => { const c = cart.count(); el.textContent = c; el.style.display = c > 0 ? '' : 'none'; }); }
   };
 
   const auth = {
@@ -155,6 +136,50 @@ const App = (() => {
     }
   };
 
+  // ---------- GLOBAL CHECKOUT MODAL ----------
+  function ensureCheckoutModal() {
+    let el = document.getElementById('globalCheckoutModal');
+    if (el) return el;
+    const div = document.createElement('div');
+    div.id = 'globalCheckoutModal';
+    div.className = 'modal';
+    div.innerHTML = `
+      <div class="modal__sheet">
+        <div class="modal__head">
+          <div><h3 class="modal__title">Checkout</h3><p class="modal__sub" id="globalCheckoutCount">0 items</p></div>
+          <button class="modal__close" data-modal-close="globalCheckoutModal"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <form id="globalCheckoutForm" class="flex-col gap-3">
+          <div class="field"><label class="field__label">Full Name</label><input type="text" name="fullName" class="field__input" required /></div>
+          <div class="field"><label class="field__label">Email</label><input type="email" name="email" class="field__input" required /></div>
+          <div class="field"><label class="field__label">Phone Number</label><input type="tel" name="phone" class="field__input" required /></div>
+          <div class="field"><label class="field__label">Delivery Address</label><textarea name="address" class="field__input" required rows="2"></textarea></div>
+          <div class="flex justify-between items-center p-3 mt-2" style="background:var(--color-elevated); border-radius:var(--radius);">
+            <span class="text-muted">Total Amount</span><span class="text-gold font-bold" id="globalCheckoutTotal">₦0</span>
+          </div>
+          <button type="submit" class="btn btn--primary w-full mt-2">Pay with Paystack</button>
+        </form>
+      </div>`;
+    document.body.appendChild(div);
+    document.getElementById('globalCheckoutForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await form.submit(e.target, async (data) => {
+        const res = await api.post('/orders/checkout', { ...data, items: window._globalCheckoutItems });
+        window.location.href = res.data.authorization_url;
+      });
+    });
+    modal.bind();
+    return div;
+  }
+
+  function openGlobalCheckout(items, total) {
+    ensureCheckoutModal();
+    document.getElementById('globalCheckoutCount').textContent = `${items.length} item(s)`;
+    document.getElementById('globalCheckoutTotal').textContent = naira(total);
+    window._globalCheckoutItems = items;
+    modal.open('globalCheckoutModal');
+  }
+
   function injectChrome() {
     const path = window.location.pathname;
     const isHome = path === '/' || path.includes('index.html');
@@ -167,10 +192,7 @@ const App = (() => {
         <div class="site-header__inner">
           <a href="/" class="brand" aria-label="OpenTech home">
             <div class="brand__logo"><img src="/assets/logo.png" alt="OpenTech" /></div>
-            <div>
-              <div class="brand__name">OPEN<span>TECH</span></div>
-              <span class="brand__sub">Kano · Nigeria</span>
-            </div>
+            <div><div class="brand__name">OPEN<span>TECH</span></div><span class="brand__sub">Kano · Nigeria</span></div>
           </a>
           <nav class="header-nav">
             <a href="/" class="header-nav__link ${isHome ? 'active' : ''}"><i class="fa-solid fa-house"></i><span data-i18n="nav_home">Gida</span></a>
@@ -179,7 +201,6 @@ const App = (() => {
             <a href="/innovations" class="header-nav__link ${isInno ? 'active' : ''}"><i class="fa-solid fa-microchip"></i><span data-i18n="nav_projects">Ayyukanmu</span></a>
           </nav>
           <div class="header-actions">
-            <button id="langToggleBtn" class="lang-pill" type="button" aria-label="Switch language"><i class="fa-solid fa-language"></i><span id="langCurrentText">HAUSA</span></button>
             <a href="/cart" class="icon-btn" aria-label="Cart"><i class="fa-solid fa-cart-shopping"></i><span class="cart-badge" data-cart-count style="display:none">0</span></a>
             <button id="accountBtn" class="icon-btn" aria-label="Account"><i class="fa-solid fa-user"></i></button>
             <button class="icon-btn menu-toggle" id="menuToggleBtn" aria-label="Menu"><i class="fa-solid fa-bars"></i></button>
@@ -194,10 +215,12 @@ const App = (() => {
             <a href="/academy" class="sidebar-link ${isAcademy ? 'active' : ''}"><i class="fa-solid fa-graduation-cap"></i> <span data-i18n="nav_courses">Kwasa-kwasai</span></a>
             <a href="/store" class="sidebar-link ${isStore ? 'active' : ''}"><i class="fa-solid fa-store"></i> <span data-i18n="nav_store">Shago</span></a>
             <a href="/innovations" class="sidebar-link ${isInno ? 'active' : ''}"><i class="fa-solid fa-microchip"></i> <span data-i18n="nav_projects">Ayyukanmu</span></a>
+            <div style="margin:16px 0; height:1px; background:var(--color-border);"></div>
+            <button class="sidebar-link" id="mobileLangBtn" style="border:none; background:none; text-align:left; cursor:pointer;"><i class="fa-solid fa-language"></i> <span id="mobileLangText">HAUSA / ENGLISH</span></button>
+            <a href="/account" class="sidebar-link"><i class="fa-solid fa-user"></i> <span data-i18n="nav_account">Asusuna</span></a>
           </nav>
         </div>
-      </div>
-    `;
+      </div>`;
 
     const footerHTML = `
       <footer class="site-footer">
@@ -210,21 +233,25 @@ const App = (() => {
           <a href="/account" data-i18n="nav_account">Asusuna</a>
         </div>
         <p class="site-footer__copyright" data-i18n="footer_copyright">Hakkin Mallaka © 2026 OpenTech.</p>
-      </footer>
-    `;
+      </footer>`;
 
     document.body.insertAdjacentHTML('afterbegin', headerHTML);
     document.body.insertAdjacentHTML('beforeend', footerHTML);
 
-    modal.bind();
-    cart.updateBadge();
-    const langBtn = document.getElementById('langToggleBtn'); if (langBtn) langBtn.addEventListener('click', () => i18n.toggle());
-    const menuBtn = document.getElementById('menuToggleBtn'); const closeSidebarBtn = document.getElementById('closeSidebarBtn'); const sidebarOverlay = document.getElementById('sidebarOverlay');
+    modal.bind(); cart.updateBadge();
+
+    const menuBtn = document.getElementById('menuToggleBtn');
+    const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
     if (menuBtn && sidebarOverlay) {
       menuBtn.addEventListener('click', () => sidebarOverlay.classList.add('is-open'));
       closeSidebarBtn.addEventListener('click', () => sidebarOverlay.classList.remove('is-open'));
       sidebarOverlay.addEventListener('click', (e) => { if (e.target === sidebarOverlay) sidebarOverlay.classList.remove('is-open'); });
     }
+
+    const mobileLangBtn = document.getElementById('mobileLangBtn');
+    if (mobileLangBtn) mobileLangBtn.addEventListener('click', () => i18n.toggle());
+
     const accountBtn = document.getElementById('accountBtn');
     if (accountBtn) {
       accountBtn.addEventListener('click', async (e) => {
@@ -234,6 +261,6 @@ const App = (() => {
     }
   }
 
-  return { api, notify, modal, form, render, naira, i18n, cart, auth, injectChrome };
+  return { api, notify, modal, form, render, naira, i18n, cart, auth, injectChrome, openGlobalCheckout };
 })();
 window.App = App;
