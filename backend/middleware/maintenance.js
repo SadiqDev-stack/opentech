@@ -36,7 +36,7 @@ export async function checkMaintenance(req, res, next) {
     // Block with JSON response
     res.status(503).json({
       success: false,
-      message: 'The site is currently under maintenance. Please check back soon.',
+      message: 'The site is currently under maintenance. Please check back soon.', maintenance: true,
       data: null
     });
   } catch (err) {

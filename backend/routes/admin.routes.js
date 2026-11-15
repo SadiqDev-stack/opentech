@@ -41,6 +41,14 @@ router.put('/orders/:id', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+router.put('/courses/:id', async (req, res, next) => {
+  try {
+    const { title, description, price, image, duration, telegramLink } = req.body;
+    const course = await Course.findByIdAndUpdate(req.params.id, { title, description, price, image, duration, telegramLink }, { new: true });
+    res.json({ success: true, data: course });
+  } catch (err) { next(err); }
+});
+
 // Enrollments
 router.get('/enrollments', async (req, res, next) => {
   try { const e = await Enrollment.find().populate('user', 'fullName email').populate('course', 'title').sort({ createdAt: -1 }); res.json({ success: true, data: e }); } catch (err) { next(err); }
