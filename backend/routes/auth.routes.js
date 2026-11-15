@@ -33,6 +33,9 @@ router.post('/login', authLimiter, validate(validators.auth.login), async (req, 
     const { email, password } = req.body;
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    if (user.role === 'admin') {
+      return res.status(403).json({ success: false, message: 'Admin accounts must log in through the admin portal (/admin-login).' });
+    }
     if (!user.active) return res.status(403).json({ success: false, message: 'Account disabled' });
 
     const match = await comparePassword(password, user.password);
@@ -109,11 +112,6 @@ router.post('/admin-login', authLimiter, validate(validators.auth.login), async 
     user.loginTokenExpires = new Date(Date.now() + 15 * 60 * 1000);
     await user.save();
 
-    if (!env.smtp.host || !env.smtp.user) {
-      const authToken = signToken({ id: user._id });
-      res.cookie(env.cookieName, authToken, { httpOnly: true, secure: env.cookieSecure, sameSite: 'lax', maxAge: env.cookieMaxAge });
-      return res.json({ success: true, message: 'Admin authenticated successfully', data: { directLogin: true, redirect: '/admin/' } });
-    }
     const verifyLink = `${env.appUrl}/api/auth/admin-verify?token=${encodeURIComponent(token)}`;
     await sendEmail({ to: user.email, subject: 'Admin Login', text: `Click to verify within 15 minutes: ${verifyLink}` });
     res.json({ success: true, message: 'Verification link sent to your email.' });

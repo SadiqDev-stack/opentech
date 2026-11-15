@@ -67,7 +67,14 @@ const App = (() => {
   notify.info = (m) => notify(m, 'info');
 
   const modal = {
-    open(id) { const el = document.getElementById(id); if (el) { el.classList.add('is-open'); document.body.style.overflow = 'hidden'; } },
+    open(id) { /* modalPreFillHooked */
+      setTimeout(() => {
+        const m = document.getElementById(id);
+        if (m) {
+          const f = m.querySelector('form');
+          if (f && typeof prefillForm === 'function') prefillForm(f);
+        }
+      }, 50); const el = document.getElementById(id); if (el) { el.classList.add('is-open'); document.body.style.overflow = 'hidden'; } },
     close(id) { const el = document.getElementById(id); if (el) { el.classList.remove('is-open'); if (!document.querySelector('.modal.is-open')) document.body.style.overflow = ''; } },
     bind() {
       document.addEventListener('click', (e) => {
@@ -289,6 +296,37 @@ const App = (() => {
   };
 
     modal.bind();
+
+    // Auto-fetch user on initial load (fast background promise)
+    auth.me().then((u) => {
+      if (u) {
+        // Append account links to the mobile hamburger drawer so user never gets lost
+        const sidebarNav = document.querySelector('.sidebar-nav');
+        if (sidebarNav && !sidebarNav.querySelector('.sidebar-account-links')) {
+          const accDiv = document.createElement('div');
+          accDiv.className = 'sidebar-account-links';
+          accDiv.innerHTML = `
+            <div style="border-top:1px solid var(--color-border); margin:12px 0 8px; padding-top:8px;">
+              <span style="font-size:11px; text-transform:uppercase; color:var(--color-gold,#d97706); font-weight:700; letter-spacing:1px; padding:0 12px;">${u.role === 'admin' ? 'Gudanarwa / Admin' : 'Asusuna / Account'}</span>
+            </div>
+            ${u.role === 'admin' ? `
+              <a href="/admin/" class="sidebar-link"><i class="fa-solid fa-gauge"></i> <span>Admin Panel</span></a>
+            ` : `
+              <a href="/account/" class="sidebar-link"><i class="fa-solid fa-chart-pie"></i> <span>Overview</span></a>
+              <a href="/account/orders.html" class="sidebar-link"><i class="fa-solid fa-receipt"></i> <span>Orders</span></a>
+              <a href="/account/academy.html" class="sidebar-link"><i class="fa-solid fa-graduation-cap"></i> <span>Academy</span></a>
+              <a href="/account/innovations.html" class="sidebar-link"><i class="fa-solid fa-microchip"></i> <span>Requests</span></a>
+              <a href="/account/reports.html" class="sidebar-link"><i class="fa-solid fa-flag"></i> <span>Reports</span></a>
+              <a href="/account/settings.html" class="sidebar-link"><i class="fa-solid fa-gear"></i> <span>Settings</span></a>
+            `}
+            <a href="#" class="sidebar-link" onclick="App.auth.logout(); return false;" style="color:#ef4444 !important;"><i class="fa-solid fa-right-from-bracket"></i> <span>Fita / Logout</span></a>
+          `;
+          sidebarNav.appendChild(accDiv);
+        }
+        // Auto-fill all forms on page
+        document.querySelectorAll('form').forEach(f => prefillForm(f));
+      }
+    }).catch(() => {});
     cart.updateBadge();
     document.addEventListener('click', async (event) => {
       const button = event.target.closest('[data-copy-link]');
@@ -314,10 +352,15 @@ const App = (() => {
     }
     const accountBtn = document.getElementById('accountBtn');
     if (accountBtn) {
-      accountBtn.addEventListener('click', async (e) => {
-        e.preventDefault(); const originalHTML = accountBtn.innerHTML; accountBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-        const isAuth = await auth.checkAccess(); if (isAuth) window.location.href = '/account'; accountBtn.innerHTML = originalHTML;
+      accountBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (auth.user) {
+          window.location.href = (auth.user.role === 'admin') ? '/admin/' : '/account/';
+        } else {
+          window.location.href = '/login';
+        }
       });
+    });
     }
   }
 

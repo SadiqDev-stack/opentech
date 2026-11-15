@@ -1,5 +1,6 @@
 (async function () {
   await App.i18n.init();
+  if (!document.querySelector(".site-header")) App.injectChrome();
   
   const user = await App.auth.me();
   if (!user) {
