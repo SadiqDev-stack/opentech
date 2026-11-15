@@ -79,6 +79,40 @@ const App = (() => {
     }
   };
 
+  const confirm = function(opts) {
+    const id = 'confirm-' + Date.now();
+    const html = '<div id="' + id + '" class="modal"><div class="modal__sheet"><div class="modal__head"><h3 class="modal__title">' + (opts.title || 'Confirm') + '</h3></div><p class="text-muted mb-4">' + (opts.message || '') + '</p><div class="flex gap-2"><button class="btn btn--outline w-full" data-modal-close="' + id + '">Cancel</button><button class="btn btn--primary w-full" id="' + id + '-ok">Confirm</button></div></div></div>';
+    document.body.insertAdjacentHTML('beforeend', html);
+    modal.open(id);
+    document.getElementById(id + '-ok').onclick = () => { modal.close(id); if (opts.onConfirm) opts.onConfirm(); };
+  };
+  modal.confirm = confirm;
+
+  const prefillForm = function(formEl) {
+    if (!formEl || !window.App.auth || !App.auth.user) return;
+    const u = App.auth.user;
+    ['fullName', 'email', 'phone'].forEach(k => {
+      const el = formEl.querySelector('[name="' + k + '"]');
+      if (el && !el.value) el.value = u[k] || '';
+    });
+  };
+  App.prefillForm = prefillForm;
+
+  
+  const showMaintenanceBanner = function(target) {
+    const el = typeof target === 'string' ? document.querySelector(target) : target;
+    if (!el) return;
+    var html = '';
+    html += '<div class="card p-6 text-center">';
+    html += '<i class="fa-solid fa-tools" style="font-size:40px;color:var(--color-gold);margin-bottom:16px;"></i>';
+    html += '<h3 class="font-bold text-white mb-2">We will be back soon</h3>';
+    html += '<p class="text-muted">OpenTech is currently under maintenance. Courses and products will be back online shortly.</p>';
+    html += '<p class="text-muted" style="font-size:12px;margin-top:8px;">OpenTech yana gyaran yanar gizo. Kwasa-kwasai da kayayyaki za su dawo nan ba da jimawa ba.</p>';
+    html += '</div>';
+    el.innerHTML = html;
+  };
+  App.showMaintenanceBanner = showMaintenanceBanner;
+
   const form = {
     async submit(formEl, handler) {
       if (!formEl) return;
@@ -257,7 +291,7 @@ const App = (() => {
     if (accountBtn) {
       accountBtn.addEventListener('click', async (e) => {
         e.preventDefault(); const originalHTML = accountBtn.innerHTML; accountBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-        const isAuth = await auth.checkAccess(); if (isAuth) window.location.href = '/account'; accountBtn.innerHTML = originalHTML;
+        const isAuth = await auth.checkAccess(); if (isAuth) window.location.href = (App.auth.user && App.auth.user.role === 'admin') ? '/admin' : '/account'; accountBtn.innerHTML = originalHTML;
       });
     }
   }

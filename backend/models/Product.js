@@ -3,7 +3,7 @@ const productSchema = new mongoose.Schema({
   name: { ha: { type: String, required: true }, en: { type: String, required: true } },
   description: { ha: { type: String, required: true }, en: { type: String, required: true } },
   price: { type: Number, required: true },
-  image: { type: String, required: true },
+  image: { type: String, default: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=70' },
   stock: { type: Number, default: 0 },
   slug: { type: String, unique: true },
   archived: { type: Boolean, default: false }

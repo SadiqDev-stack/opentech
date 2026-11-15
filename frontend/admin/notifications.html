@@ -13,7 +13,7 @@
     <div class="card p-5" style="max-width:600px;">
       <p class="text-muted text-sm mb-4"><i class="fa-solid fa-info-circle text-gold"></i> Safe limit: Max 100 notifications per day to prevent spam flags and service bans.</p>
       <form id="notifyForm" class="flex-col gap-3">
-        <div class="field"><label class="field__label">Channel</label><select id="channel" class="field__input"><option value="email">Email (Nodemailer)</option><option value="sms">SMS (eBulkSMS)</option></select></div>
+        <div class="field"><label class="field__label">Channel</label><select id="channel" class="field__input"><option value="email">Email (SMS)</option><option value="sms">SMS (SMS)</option></select></div>
         <div class="field"><label class="field__label">Message</label><textarea id="broadcastMessage" class="field__input" rows="4" required></textarea></div>
         <button type="submit" class="btn btn--primary">Send Broadcast</button>
       </form>
