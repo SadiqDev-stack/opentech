@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+# Do not index account or admin pages
+Disallow: /account/
+Disallow: /admin/
+Disallow: /admin-login
+Disallow: /message
+
+# Sitemap location
+Sitemap: https://opentech.ng/sitemap.xml

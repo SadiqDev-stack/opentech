@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "regions": ["dub1"],
+  "builds": [
+    {
+      "src": "backend/server.js",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["frontend/**"]
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "backend/server.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "backend/server.js"
+    }
+  ]
+}

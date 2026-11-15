@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ha">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cart — OpenTech</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="/css/base.css" /><link rel="stylesheet" href="/css/layout.css" /><link rel="stylesheet" href="/css/components.css" /><link rel="stylesheet" href="/css/pages.css" />
+</head>
+<body>
+  <main class="section" style="max-width: 800px;">
+    <div class="section__head"><div><h1 class="section__title">Shopping Cart</h1></div></div>
+    <div id="cartItems" class="flex-col gap-3"></div>
+    <div id="cartSummary" class="mt-4 hidden" style="background:var(--color-card); border:1px solid var(--color-border); border-radius:var(--radius-lg); padding:16px;">
+      <div class="flex justify-between mb-2"><span class="text-muted">Subtotal</span><span id="cartSubtotal" class="text-gold font-bold">₦0</span></div>
+      <button class="btn btn--primary btn--block mt-4" id="checkoutAllButton" type="button" onclick="checkoutAll()">Purchase All</button>
+    </div>
+  </main>
+  <div id="checkoutModal" class="modal">
+    <div class="modal__sheet">
+      <div class="modal__head"><div><h2 class="modal__title">Checkout</h2><p class="modal__sub" id="checkoutItemCount">0 items</p></div><button class="modal__close" data-modal-close="checkoutModal" aria-label="Close checkout"><i class="fa-solid fa-xmark"></i></button></div>
+      <form id="checkoutForm" class="flex-col gap-3">
+        <div class="field"><label class="field__label">Full Name</label><input type="text" name="fullName" class="field__input" required /></div>
+        <div class="field"><label class="field__label">Email</label><input type="email" name="email" class="field__input" required /></div>
+        <div class="field"><label class="field__label">Phone Number</label><input type="tel" name="phone" class="field__input" required /></div>
+        <div class="field"><label class="field__label">Delivery Address</label><textarea name="address" class="field__input" required rows="2"></textarea></div>
+        <div class="flex justify-between items-center p-3"><span class="text-muted">Total Amount</span><span class="text-gold font-bold" id="checkoutTotal">₦0</span></div>
+        <button type="submit" class="btn btn--primary w-full">Pay with Paystack</button>
+      </form>
+    </div>
+  </div>
+  <script src="/js/core.js"></script>
+  <script src="/js/cart.js"></script>
+
+</body>
+</html>
