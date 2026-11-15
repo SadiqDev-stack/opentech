@@ -11,20 +11,20 @@ router.get('/status', async (req, res) => {
 
 router.get('/', requireAdmin, async (req, res, next) => {
   try {
-    let s = await Setting.findOne();
-    if (!s) s = await Setting.create({});
-    res.json({ success: true, data: s });
+    let setting = await Setting.findOne();
+    if (!setting) setting = await Setting.create({});
+    res.json({ success: true, data: setting });
   } catch (err) { next(err); }
 });
 
 router.put('/', requireAdmin, async (req, res, next) => {
   try {
-    const allowed = ['maintenanceMode','paystackPublicKey','paystackSecretKey','cloudinaryCloudName','cloudinaryApiKey','cloudinaryApiSecret','ebulkSmsUsername','ebulkSmsApiKey','smtpHost','smtpPort','smtpUser','smtpPass'];
-    let s = await Setting.findOne();
-    if (!s) s = new Setting();
-    allowed.forEach(k => { if (req.body[k] !== undefined) s[k] = req.body[k]; });
-    await s.save();
-    res.json({ success: true, data: s });
+    const { maintenanceMode } = req.body;
+    let setting = await Setting.findOne();
+    if (!setting) setting = new Setting();
+    if (maintenanceMode !== undefined) setting.maintenanceMode = maintenanceMode;
+    await setting.save();
+    res.json({ success: true, data: setting });
   } catch (err) { next(err); }
 });
 

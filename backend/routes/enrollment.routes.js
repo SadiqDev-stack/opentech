@@ -103,8 +103,7 @@ router.post('/verify', async (req, res, next) => {
     await payment.save();
 
     // Update Enrollment
-    const enrollment = await Enrollment.findByIdAndUpdate(payment.relatedId, { status: 'paid' }, { new: true });
-    if (enrollment) await Course.findByIdAndUpdate(enrollment.course, { $inc: { enrollmentCount: 1 } });
+    await Enrollment.findByIdAndUpdate(payment.relatedId, { status: 'paid' });
 
     res.json({ success: true, message: 'Enrollment successful' });
   } catch (err) { next(err); }

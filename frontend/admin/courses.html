@@ -26,7 +26,7 @@
         <div class="field"><label class="field__label">Desc (Hausa)</label><textarea id="descHa" class="field__input" required></textarea></div>
         <div class="field"><label class="field__label">Price (₦)</label><input type="number" id="price" class="field__input" required></div>
         <div class="field"><label class="field__label">Duration</label><input type="text" id="duration" class="field__input" placeholder="6 Weeks" required></div>
-        <div class="field"><label class="field__label">Image URL</label><input type="url" id="image" class="field__input"></div>
+        <div class="field"><label class="field__label">Image URL</label><input type="url" id="image" class="field__input" required></div>
         <div class="field"><label class="field__label">Or Upload Image</label><input type="file" id="imageUpload" class="field__input" accept="image/*"></div>
         <div class="field"><label class="field__label">Telegram Link</label><input type="url" id="telegramLink" class="field__input"></div>
         <button type="submit" class="btn btn--primary w-full mt-2">Save Course</button>
@@ -46,7 +46,7 @@
           <div class="card p-4">
             <img src="${c.image}" style="width:100%; height:120px; object-fit:cover; border-radius:8px; margin-bottom:12px;">
             <h3 class="font-bold text-white mb-1">${c.title.en}</h3>
-            <div class="flex justify-between text-sm mt-2"><span class="text-muted">Enrolled:</span><span class="text-gold font-bold">${c.enrollmentCount || 0}</span></div><div class="flex justify-between text-sm mt-1"><span class="text-muted">Price:</span><span class="text-gold font-bold">${App.naira(c.price)}</span></div>
+            <div class="flex justify-between text-sm mt-2"><span class="text-muted">Price:</span><span class="text-gold font-bold">${App.naira(c.price)}</span></div>
             <div class="flex gap-2 mt-4">
               <button class="btn btn--outline btn--sm w-full" onclick="navigator.clipboard.writeText('${location.origin}/course/${c.slug}'); App.notify.success('Link Copied')"><i class="fa-solid fa-link"></i></button>
               <button class="btn btn--primary btn--sm w-full" onclick="editCourse('${c._id}')">Edit</button>

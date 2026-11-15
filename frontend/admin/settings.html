@@ -1,72 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Settings — OpenTech</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <link rel="stylesheet" href="/css/base.css" /><link rel="stylesheet" href="/css/layout.css" /><link rel="stylesheet" href="/css/components.css" /><link rel="stylesheet" href="/css/pages.css" />
+  <link rel="stylesheet" href="/css/base.css" />
+  <link rel="stylesheet" href="/css/layout.css" />
+  <link rel="stylesheet" href="/css/components.css" />
+  <link rel="stylesheet" href="/css/pages.css" />
+  <link rel="stylesheet" href="/css/utilities.css" />
 </head>
 <body>
   <div>
     <h1 class="section__title mb-4">System Settings</h1>
-    <p class="text-muted text-sm mb-4">Credentials are stored securely in the database. Clear a field and save to remove it.</p>
-    <form id="settingsForm" class="flex-col gap-4" style="max-width:700px;">
-      <div class="card p-4">
-        <h3 class="font-bold text-white mb-3 border-b border-surface-border pb-2">Paystack</h3>
-        <div class="field mb-3"><label class="field__label">Public Key</label><input type="password" name="paystackPublicKey" class="field__input"></div>
-        <div class="field mb-3"><label class="field__label">Secret Key</label><input type="password" name="paystackSecretKey" class="field__input"></div>
-      </div>
-      <div class="card p-4">
-        <h3 class="font-bold text-white mb-3 border-b border-surface-border pb-2">Cloudinary</h3>
-        <div class="field mb-3"><label class="field__label">Cloud Name</label><input type="text" name="cloudinaryCloudName" class="field__input"></div>
-        <div class="field mb-3"><label class="field__label">API Key</label><input type="password" name="cloudinaryApiKey" class="field__input"></div>
-        <div class="field mb-3"><label class="field__label">API Secret</label><input type="password" name="cloudinaryApiSecret" class="field__input"></div>
-      </div>
-      <div class="card p-4">
-        <h3 class="font-bold text-white mb-3 border-b border-surface-border pb-2">SMTP (Email)</h3>
-        <div class="field mb-3"><label class="field__label">Host</label><input type="text" name="smtpHost" class="field__input" placeholder="smtp.gmail.com"></div>
-        <div class="field mb-3"><label class="field__label">Port</label><input type="number" name="smtpPort" class="field__input" placeholder="587"></div>
-        <div class="field mb-3"><label class="field__label">User</label><input type="text" name="smtpUser" class="field__input"></div>
-        <div class="field mb-3"><label class="field__label">Password</label><input type="password" name="smtpPass" class="field__input"></div>
-      </div>
-      <div class="card p-4">
-        <h3 class="font-bold text-white mb-3 border-b border-surface-border pb-2">SMS (eBulkSMS)</h3>
-        <div class="field mb-3"><label class="field__label">Username</label><input type="text" name="ebulkSmsUsername" class="field__input"></div>
-        <div class="field mb-3"><label class="field__label">API Key</label><input type="password" name="ebulkSmsApiKey" class="field__input"></div>
-      </div>
-      <div class="card p-4">
-        <h3 class="font-bold text-white mb-3 border-b border-surface-border pb-2">Maintenance Mode</h3>
-        <label class="flex items-center gap-2 text-white"><input type="checkbox" name="maintenanceMode"> Enable Maintenance</label>
-      </div>
-      <button type="submit" class="btn btn--primary"><i class="fa-solid fa-save"></i> Save Settings</button>
-    </form>
+    <div class="grid-2 mb-6">
+      <div class="card p-4 flex justify-between items-center" id="card-paystack"><div><div class="font-bold text-white">Paystack Gateway</div><div class="text-muted text-xs">Card & Bank Transfer</div></div><span class="badge badge--muted">Checking...</span></div>
+      <div class="card p-4 flex justify-between items-center" id="card-cloudinary"><div><div class="font-bold text-white">Cloudinary CDN</div><div class="text-muted text-xs">Secure Media Uploads</div></div><span class="badge badge--muted">Checking...</span></div>
+      <div class="card p-4 flex justify-between items-center" id="card-sms"><div><div class="font-bold text-white">eBulkSMS</div><div class="text-muted text-xs">SMS Notifications</div></div><span class="badge badge--muted">Checking...</span></div>
+      <div class="card p-4 flex justify-between items-center" id="card-smtp"><div><div class="font-bold text-white">Nodemailer / SMTP</div><div class="text-muted text-xs">Transactional Emails</div></div><span class="badge badge--muted">Checking...</span></div>
+    </div>
+    <div class="card p-5" style="max-width:500px;">
+      <h3 class="font-bold text-white mb-2">Maintenance Mode</h3>
+      <p class="text-muted text-sm mb-4">When enabled, public visitors will see a maintenance page.</p>
+      <div class="flex items-center gap-3"><button id="maintenanceBtn" class="btn btn--outline" onclick="toggleMaintenance()">Toggle</button><span id="maintenanceStatus" class="badge badge--muted">Loading...</span></div>
+    </div>
   </div>
   <script src="/js/core.js"></script>
   <script>
-    (async function () {
+    (async function() {
+      try {
+        const res = await App.api.get('/settings/status');
+        const s = res.data;
+        const setBadge = (id, ok) => { const el = document.querySelector(`#card-${id} .badge`); el.className = `badge ${ok ? 'badge--success' : 'badge--error'}`; el.textContent = ok ? 'Configured' : 'Not Configured'; };
+        setBadge('paystack', s.paystack); setBadge('cloudinary', s.cloudinary); setBadge('sms', s.ebulksms); setBadge('smtp', s.smtp);
+      } catch {}
       try {
         const res = await App.api.get('/settings');
-        const s = res.data;
-        Object.keys(s).forEach(k => {
-          const el = document.querySelector(`[name="${k}"]`);
-          if (el) {
-            if (el.type === 'checkbox') el.checked = !!s[k];
-            else el.value = s[k] || '';
-          }
-        });
-      } catch (e) { App.notify.error('Failed to load settings'); }
-      
-      document.getElementById('settingsForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const fd = new FormData(e.target);
-        const payload = {};
-        fd.forEach((v, k) => { payload[k] = k === 'maintenanceMode' ? v === 'on' : v; });
-        await App.form.submit(e.target, async () => {
-          await App.api.put('/settings', payload);
-          App.notify.success('Settings saved');
-        });
-      });
+        const el = document.getElementById('maintenanceStatus');
+        if (res.data.maintenanceMode) { el.className = 'badge badge--error'; el.textContent = 'ON'; } else { el.className = 'badge badge--success'; el.textContent = 'OFF'; }
+      } catch {}
     })();
+    async function toggleMaintenance() {
+      try {
+        const res = await App.api.get('/settings');
+        await App.api.put('/settings', { maintenanceMode: !res.data.maintenanceMode });
+        App.notify.success('Updated'); location.reload();
+      } catch { App.notify.error('Failed'); }
+    }
   </script>
   <script src="/js/admin.js"></script>
 </body>
