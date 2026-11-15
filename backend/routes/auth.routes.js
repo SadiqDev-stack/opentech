@@ -98,6 +98,7 @@ router.post('/admin-login', authLimiter, validate(validators.auth.login), async 
     const { email, password } = req.body;
     const user = await User.findOne({ email: email.toLowerCase(), role: 'admin' });
     if (!user) return res.status(401).json({ success: false, message: 'Invalid admin credentials' });
+    if (!user.active) return res.status(403).json({ success: false, message: 'Admin account disabled' });
 
     const match = await comparePassword(password, user.password);
     if (!match) return res.status(401).json({ success: false, message: 'Invalid admin credentials' });
@@ -126,6 +127,12 @@ router.get('/admin-verify', async (req, res, next) => {
 
     const user = await User.findOne({ loginToken: token, loginTokenExpires: { $gt: new Date() } });
     if (!user) return res.redirect(`${env.appUrl}/message?type=error&title=Link Expired&text=This login link is invalid or has expired.`);
+    if (user.role !== 'admin' || !user.active) {
+      user.loginToken = null;
+      user.loginTokenExpires = null;
+      await user.save();
+      return res.redirect(`${env.appUrl}/message?type=error&title=Login Failed&text=This admin account is disabled or no longer has admin access.`);
+    }
 
     user.loginToken = null;
     user.loginTokenExpires = null;
@@ -134,7 +141,8 @@ router.get('/admin-verify', async (req, res, next) => {
     const sessionToken = signToken({ id: user._id });
     res.cookie(env.cookieName, sessionToken, { httpOnly: true, secure: env.cookieSecure, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 });
 
-    res.redirect(`${env.appUrl}/admin`);
+    // Redirect on the same host that issued the session cookie.
+    res.redirect('/admin');
   } catch (err) { next(err); }
 });
 
