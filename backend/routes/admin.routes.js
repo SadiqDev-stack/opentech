@@ -153,32 +153,4 @@ router.post('/broadcast', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-
-// Course management in admin routes
-router.post('/courses', async (req, res, next) => {
-  try {
-    const data = { ...req.body };
-    if (!data.image) data.image = 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=600&q=70';
-    if (!data.slug && data.title?.en) data.slug = data.title.en.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-    const course = await Course.create(data);
-    res.status(201).json({ success: true, data: course });
-  } catch (err) { next(err); }
-});
-
-router.put('/courses/:id', async (req, res, next) => {
-  try {
-    const course = await Course.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
-    if (!course) return res.status(404).json({ success: false, message: 'Course not found' });
-    res.json({ success: true, data: course });
-  } catch (err) { next(err); }
-});
-
-router.delete('/courses/:id', async (req, res, next) => {
-  try {
-    const course = await Course.findByIdAndUpdate(req.params.id, { archived: true }, { new: true });
-    if (!course) return res.status(404).json({ success: false, message: 'Course not found' });
-    res.json({ success: true, data: course });
-  } catch (err) { next(err); }
-});
-
 export default router;

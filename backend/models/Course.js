@@ -7,8 +7,6 @@ const courseSchema = new mongoose.Schema({
   duration: { type: String, required: true },
   telegramLink: { type: String, default: '' },
   slug: { type: String, unique: true },
-  archived: { type: Boolean, default: false },
-  enrollmentCount: { type: Number, default: 0 },
-  rating: { type: Number, default: 5 }
+  archived: { type: Boolean, default: false }
 }, { timestamps: true });
 export default mongoose.model('Course', courseSchema, 'opentech_courses');

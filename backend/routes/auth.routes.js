@@ -8,7 +8,6 @@ import validators from '../utils/validators.js';
 import { requireAuth } from '../middleware/auth.js';
 import env from '../config/env.js';
 import User from '../models/User.js';
-import { ensureInitialAdminAndSeed } from '../services/autoseed.service.js';
 
 const router = express.Router();
 
@@ -33,9 +32,6 @@ router.post('/login', authLimiter, validate(validators.auth.login), async (req, 
     const { email, password } = req.body;
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) return res.status(401).json({ success: false, message: 'Invalid credentials' });
-    if (user.role === 'admin') {
-      return res.status(403).json({ success: false, message: 'Admin accounts must log in through the admin portal (/admin-login).' });
-    }
     if (!user.active) return res.status(403).json({ success: false, message: 'Account disabled' });
 
     const match = await comparePassword(password, user.password);
@@ -100,7 +96,6 @@ router.post('/reset-password', authLimiter, async (req, res, next) => {
 router.post('/admin-login', authLimiter, validate(validators.auth.login), async (req, res, next) => {
   try {
     const { email, password } = req.body;
-    await ensureInitialAdminAndSeed(email, password);
     const user = await User.findOne({ email: email.toLowerCase(), role: 'admin' });
     if (!user) return res.status(401).json({ success: false, message: 'Invalid admin credentials' });
 
@@ -112,6 +107,12 @@ router.post('/admin-login', authLimiter, validate(validators.auth.login), async 
     user.loginTokenExpires = new Date(Date.now() + 15 * 60 * 1000);
     await user.save();
 
+    if (!env.smtp.host || !env.smtp.user) {
+      user.loginToken = null;
+      user.loginTokenExpires = null;
+      await user.save();
+      return res.status(503).json({ success: false, message: 'Admin email verification is not configured. Please contact the site administrator.', data: null });
+    }
     const verifyLink = `${env.appUrl}/api/auth/admin-verify?token=${encodeURIComponent(token)}`;
     await sendEmail({ to: user.email, subject: 'Admin Login', text: `Click to verify within 15 minutes: ${verifyLink}` });
     res.json({ success: true, message: 'Verification link sent to your email.' });

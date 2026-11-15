@@ -7,7 +7,7 @@
     e.preventDefault();
     await App.form.submit(form, async (data) => {
       const res = await App.api.post('/auth/admin-login', data);
-      if (res?.data?.directLogin || res?.data?.redirect) { window.location.href = res.data.redirect || '/admin/'; } else { window.location.href = '/message?type=info&title=Check Email&text=We sent a login verification link to your admin email.&back=/admin-login'; }
+      window.location.href = '/message?type=info&title=Check Email&text=We sent a login verification link to your admin email.&back=/admin-login';
     });
   });
 })();

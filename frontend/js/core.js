@@ -67,14 +67,7 @@ const App = (() => {
   notify.info = (m) => notify(m, 'info');
 
   const modal = {
-    open(id) { /* modalPreFillHooked */
-      setTimeout(() => {
-        const m = document.getElementById(id);
-        if (m) {
-          const f = m.querySelector('form');
-          if (f && typeof prefillForm === 'function') prefillForm(f);
-        }
-      }, 50); const el = document.getElementById(id); if (el) { el.classList.add('is-open'); document.body.style.overflow = 'hidden'; } },
+    open(id) { const el = document.getElementById(id); if (el) { el.classList.add('is-open'); document.body.style.overflow = 'hidden'; } },
     close(id) { const el = document.getElementById(id); if (el) { el.classList.remove('is-open'); if (!document.querySelector('.modal.is-open')) document.body.style.overflow = ''; } },
     bind() {
       document.addEventListener('click', (e) => {
@@ -154,35 +147,6 @@ const App = (() => {
       });
     }
   };
-
-  
-  function prefillForm(formEl) {
-    if (!formEl || !auth.user) return;
-    const u = auth.user;
-    const nameInput = formEl.querySelector('[name="fullName"], [name="name"], [name="contactName"]');
-    const emailInput = formEl.querySelector('[name="email"], [name="contactEmail"]');
-    const phoneInput = formEl.querySelector('[name="phone"], [name="contactPhone"]');
-
-    if (nameInput && !nameInput.value && u.fullName) nameInput.value = u.fullName;
-    if (emailInput && !emailInput.value && u.email) {
-      emailInput.value = u.email;
-      let noteEl = formEl.querySelector('.auth-email-soft-note');
-      if (!noteEl) {
-        noteEl = document.createElement('div');
-        noteEl.className = 'auth-email-soft-note text-xs text-muted mt-1';
-        emailInput.parentNode.appendChild(noteEl);
-      }
-      emailInput.addEventListener('input', () => {
-        if (emailInput.value && emailInput.value.toLowerCase() !== (u.email || '').toLowerCase()) {
-          noteEl.textContent = 'You are logged in as ' + u.email + '. If you use another email, it will be saved separately.';
-          noteEl.style.color = '#f59e0b';
-        } else {
-          noteEl.textContent = '';
-        }
-      });
-    }
-    if (phoneInput && !phoneInput.value && u.phone) phoneInput.value = u.phone;
-  }
 
   const auth = {
     user: null,
@@ -265,68 +229,7 @@ const App = (() => {
     document.body.insertAdjacentHTML('afterbegin', headerHTML);
     document.body.insertAdjacentHTML('beforeend', footerHTML);
 
-    
-  modal.confirm = function({ title = 'Confirm Action', message = 'Are you sure you want to proceed?', confirmText = 'Confirm', cancelText = 'Cancel' } = {}) {
-    return new Promise((resolve) => {
-      let modalEl = document.getElementById('app-confirm-modal');
-      if (!modalEl) {
-        modalEl = document.createElement('div');
-        modalEl.id = 'app-confirm-modal';
-        modalEl.className = 'modal';
-        modalEl.innerHTML = '<div class="modal__dialog card p-6 max-w-sm w-full mx-4" style="background:var(--color-bg-card,#13161c);border:1px solid var(--color-border,#2a2f3d);border-radius:12px;"><h3 id="app-confirm-title" class="text-lg font-bold text-white mb-2"></h3><p id="app-confirm-msg" class="text-sm text-muted mb-6"></p><div class="flex justify-end gap-3"><button id="app-confirm-cancel" type="button" class="btn btn--ghost btn--sm">Cancel</button><button id="app-confirm-ok" type="button" class="btn btn--primary btn--sm">Confirm</button></div></div>';
-        document.body.appendChild(modalEl);
-      }
-      modalEl.querySelector('#app-confirm-title').textContent = title;
-      modalEl.querySelector('#app-confirm-msg').textContent = message;
-      const okBtn = modalEl.querySelector('#app-confirm-ok');
-      const cancelBtn = modalEl.querySelector('#app-confirm-cancel');
-      okBtn.textContent = confirmText;
-      cancelBtn.textContent = cancelText;
-
-      const cleanup = (val) => {
-        modal.close('app-confirm-modal');
-        okBtn.onclick = null;
-        cancelBtn.onclick = null;
-        resolve(val);
-      };
-      okBtn.onclick = () => cleanup(true);
-      cancelBtn.onclick = () => cleanup(false);
-      modal.open('app-confirm-modal');
-    });
-  };
-
     modal.bind();
-
-    // Auto-fetch user on initial load (fast background promise)
-    auth.me().then((u) => {
-      if (u) {
-        // Append account links to the mobile hamburger drawer so user never gets lost
-        const sidebarNav = document.querySelector('.sidebar-nav');
-        if (sidebarNav && !sidebarNav.querySelector('.sidebar-account-links')) {
-          const accDiv = document.createElement('div');
-          accDiv.className = 'sidebar-account-links';
-          accDiv.innerHTML = `
-            <div style="border-top:1px solid var(--color-border); margin:12px 0 8px; padding-top:8px;">
-              <span style="font-size:11px; text-transform:uppercase; color:var(--color-gold,#d97706); font-weight:700; letter-spacing:1px; padding:0 12px;">${u.role === 'admin' ? 'Gudanarwa / Admin' : 'Asusuna / Account'}</span>
-            </div>
-            ${u.role === 'admin' ? `
-              <a href="/admin/" class="sidebar-link"><i class="fa-solid fa-gauge"></i> <span>Admin Panel</span></a>
-            ` : `
-              <a href="/account/" class="sidebar-link"><i class="fa-solid fa-chart-pie"></i> <span>Overview</span></a>
-              <a href="/account/orders.html" class="sidebar-link"><i class="fa-solid fa-receipt"></i> <span>Orders</span></a>
-              <a href="/account/academy.html" class="sidebar-link"><i class="fa-solid fa-graduation-cap"></i> <span>Academy</span></a>
-              <a href="/account/innovations.html" class="sidebar-link"><i class="fa-solid fa-microchip"></i> <span>Requests</span></a>
-              <a href="/account/reports.html" class="sidebar-link"><i class="fa-solid fa-flag"></i> <span>Reports</span></a>
-              <a href="/account/settings.html" class="sidebar-link"><i class="fa-solid fa-gear"></i> <span>Settings</span></a>
-            `}
-            <a href="#" class="sidebar-link" onclick="App.auth.logout(); return false;" style="color:#ef4444 !important;"><i class="fa-solid fa-right-from-bracket"></i> <span>Fita / Logout</span></a>
-          `;
-          sidebarNav.appendChild(accDiv);
-        }
-        // Auto-fill all forms on page
-        document.querySelectorAll('form').forEach(f => prefillForm(f));
-      }
-    }).catch(() => {});
     cart.updateBadge();
     document.addEventListener('click', async (event) => {
       const button = event.target.closest('[data-copy-link]');
@@ -352,15 +255,10 @@ const App = (() => {
     }
     const accountBtn = document.getElementById('accountBtn');
     if (accountBtn) {
-      accountBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (auth.user) {
-          window.location.href = (auth.user.role === 'admin') ? '/admin/' : '/account/';
-        } else {
-          window.location.href = '/login';
-        }
+      accountBtn.addEventListener('click', async (e) => {
+        e.preventDefault(); const originalHTML = accountBtn.innerHTML; accountBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+        const isAuth = await auth.checkAccess(); if (isAuth) window.location.href = '/account'; accountBtn.innerHTML = originalHTML;
       });
-    });
     }
   }
 
@@ -371,6 +269,6 @@ const App = (() => {
     return `<div class=\"share-actions\"><button type=\"button\" class=\"btn btn--outline btn--sm\" data-copy-link=\"${render.escape(absolute)}\"><i class=\"fa-solid fa-copy\"></i> Copy link</button><a class=\"btn btn--ghost btn--sm\" target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://wa.me/?text=${text}%20${link}\" aria-label=\"Share on WhatsApp\"><i class=\"fa-brands fa-whatsapp\"></i></a><a class=\"btn btn--ghost btn--sm\" target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://www.facebook.com/sharer/sharer.php?u=${link}\" aria-label=\"Share on Facebook\"><i class=\"fa-brands fa-facebook\"></i></a></div>`;
   }
 
-  return { api, notify, modal, form, render, naira, i18n, cart, auth, injectChrome, shareButtons, prefillForm };
+  return { api, notify, modal, form, render, naira, i18n, cart, auth, injectChrome, shareButtons };
 })();
 window.App = App;

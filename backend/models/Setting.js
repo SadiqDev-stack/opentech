@@ -7,10 +7,6 @@ const settingSchema = new mongoose.Schema({
   cloudinaryApiKey: { type: String, default: '' },
   cloudinaryApiSecret: { type: String, default: '' },
   ebulkSmsUsername: { type: String, default: '' },
-  ebulkSmsApiKey: { type: String, default: '' },
-  smtpHost: { type: String, default: '' },
-  smtpPort: { type: Number, default: 587 },
-  smtpUser: { type: String, default: '' },
-  smtpPass: { type: String, default: '' }
+  ebulkSmsApiKey: { type: String, default: '' }
 }, { timestamps: true });
 export default mongoose.model('opentech_settings', settingSchema, 'opentech_settings');
