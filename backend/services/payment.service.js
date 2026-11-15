@@ -1,7 +1,17 @@
 import crypto from 'crypto';
 import env from '../config/env.js';
+import Setting from '../models/Setting.js';
 
 export async function initializePayment({ email, amount, reference, callbackUrl }) {
+  const dbSetting = await Setting.findOne().lean().catch(() => null);
+  const secretKey = dbSetting?.paystackSecretKey || env.paystack.secretKey;
+  if (!secretKey) {
+    console.log('[payment-mock] Init: N' + amount + ' for ' + email + ' | Ref: ' + reference);
+    return {
+      authorization_url: env.appUrl + '/api/payments/mock-checkout?reference=' + reference,
+      reference
+    };
+  }
   if (!env.paystack.secretKey) {
     console.log(`[payment-mock] Init: N${amount} for ${email} | Ref: ${reference}`);
     return {

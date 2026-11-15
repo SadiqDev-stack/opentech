@@ -242,3 +242,10 @@ main {
 .w-full { width:100%; }
 .rounded { border-radius:var(--radius); }
 .truncate { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+
+/* Fix 2: Ayyukanmu button border */
+a.btn--ghost[data-i18n="nav_projects"],
+a.btn--ghost[href="/innovations"] {
+  border: 1px solid var(--color-border, rgba(217,119,6,0.3)) !important;
+}

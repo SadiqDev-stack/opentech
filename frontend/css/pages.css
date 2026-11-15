@@ -270,3 +270,17 @@
   max-width: 160px;
   margin: 0 auto;
 }
+
+
+/* Fix 1: Desktop banner image gentle blur */
+@media (min-width: 768px) {
+  .banner { overflow: hidden; }
+  .banner__img {
+    filter: blur(3.5px);
+    transform: scale(1.04);
+    transition: filter 0.3s ease;
+  }
+}
+@media (max-width: 767px) {
+  .banner__img { filter: none; transform: none; }
+}

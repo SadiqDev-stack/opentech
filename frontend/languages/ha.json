@@ -96,12 +96,14 @@
   "request_btn": "Tura Bukata",
   "enroll_title": "Yi Rajistar Kwas",
   "enroll_sub": "Shigar da bayananka domin kammala biya.",
-  "pay_btn": "Biya Yanzu da Paystack",
+  "pay_btn": "Biya don Siyan",
   "checkout_title": "Biya da Isar da Sako",
   "address_label": "Adireshi / Delivery Address",
   "total_label": "Jimillar Kudi",
   "budget_label": "Kiyasin Kudin Aiki",
   "submit_request_btn": "Tura Bukatar Aiki",
   "want_similar": "Kuna son irin wannan aiki?",
-  "want_similar_sub": "Tuntube mu don a kera muku makamancin wannan ko wani aiki na daban."
+  "want_similar_sub": "Tuntube mu don a kera muku makamancin wannan ko wani aiki na daban.",
+  "pay_join": "Biya don Shiga",
+  "pay_purchase": "Biya don Siyan"
 }

@@ -1,7 +1,15 @@
 import crypto from 'crypto';
 import env from '../config/env.js';
+import Setting from '../models/Setting.js';
 
-export function generateUploadSignature() {
+export async function generateUploadSignature() {
+  const dbSetting = await Setting.findOne().lean().catch(() => null);
+  const apiSecret = dbSetting?.cloudinaryApiSecret || env.cloudinary.apiSecret;
+  const apiKey = dbSetting?.cloudinaryApiKey || env.cloudinary.apiKey;
+  const cloudName = dbSetting?.cloudinaryCloudName || env.cloudinary.cloudName;
+  if (!apiSecret || !apiKey || !cloudName) {
+    throw new Error('Cloudinary not configured');
+  }
   if (!env.cloudinary.apiSecret || !env.cloudinary.apiKey || !env.cloudinary.cloudName) {
     throw new Error('Cloudinary not configured');
   }
@@ -19,7 +27,7 @@ export function generateUploadSignature() {
     signature,
     folder,
     allowedFormats,
-    apiKey: env.cloudinary.apiKey,
+    apiKey,
     cloudName: env.cloudinary.cloudName
   };
 }

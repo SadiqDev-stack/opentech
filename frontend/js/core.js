@@ -148,6 +148,35 @@ const App = (() => {
     }
   };
 
+  
+  function prefillForm(formEl) {
+    if (!formEl || !auth.user) return;
+    const u = auth.user;
+    const nameInput = formEl.querySelector('[name="fullName"], [name="name"], [name="contactName"]');
+    const emailInput = formEl.querySelector('[name="email"], [name="contactEmail"]');
+    const phoneInput = formEl.querySelector('[name="phone"], [name="contactPhone"]');
+
+    if (nameInput && !nameInput.value && u.fullName) nameInput.value = u.fullName;
+    if (emailInput && !emailInput.value && u.email) {
+      emailInput.value = u.email;
+      let noteEl = formEl.querySelector('.auth-email-soft-note');
+      if (!noteEl) {
+        noteEl = document.createElement('div');
+        noteEl.className = 'auth-email-soft-note text-xs text-muted mt-1';
+        emailInput.parentNode.appendChild(noteEl);
+      }
+      emailInput.addEventListener('input', () => {
+        if (emailInput.value && emailInput.value.toLowerCase() !== (u.email || '').toLowerCase()) {
+          noteEl.textContent = 'You are logged in as ' + u.email + '. If you use another email, it will be saved separately.';
+          noteEl.style.color = '#f59e0b';
+        } else {
+          noteEl.textContent = '';
+        }
+      });
+    }
+    if (phoneInput && !phoneInput.value && u.phone) phoneInput.value = u.phone;
+  }
+
   const auth = {
     user: null,
     async me() { try { const res = await api.get('/auth/me'); auth.user = res?.data?.user || null; } catch { auth.user = null; } return auth.user; },
@@ -229,6 +258,36 @@ const App = (() => {
     document.body.insertAdjacentHTML('afterbegin', headerHTML);
     document.body.insertAdjacentHTML('beforeend', footerHTML);
 
+    
+  modal.confirm = function({ title = 'Confirm Action', message = 'Are you sure you want to proceed?', confirmText = 'Confirm', cancelText = 'Cancel' } = {}) {
+    return new Promise((resolve) => {
+      let modalEl = document.getElementById('app-confirm-modal');
+      if (!modalEl) {
+        modalEl = document.createElement('div');
+        modalEl.id = 'app-confirm-modal';
+        modalEl.className = 'modal';
+        modalEl.innerHTML = '<div class="modal__dialog card p-6 max-w-sm w-full mx-4" style="background:var(--color-bg-card,#13161c);border:1px solid var(--color-border,#2a2f3d);border-radius:12px;"><h3 id="app-confirm-title" class="text-lg font-bold text-white mb-2"></h3><p id="app-confirm-msg" class="text-sm text-muted mb-6"></p><div class="flex justify-end gap-3"><button id="app-confirm-cancel" type="button" class="btn btn--ghost btn--sm">Cancel</button><button id="app-confirm-ok" type="button" class="btn btn--primary btn--sm">Confirm</button></div></div>';
+        document.body.appendChild(modalEl);
+      }
+      modalEl.querySelector('#app-confirm-title').textContent = title;
+      modalEl.querySelector('#app-confirm-msg').textContent = message;
+      const okBtn = modalEl.querySelector('#app-confirm-ok');
+      const cancelBtn = modalEl.querySelector('#app-confirm-cancel');
+      okBtn.textContent = confirmText;
+      cancelBtn.textContent = cancelText;
+
+      const cleanup = (val) => {
+        modal.close('app-confirm-modal');
+        okBtn.onclick = null;
+        cancelBtn.onclick = null;
+        resolve(val);
+      };
+      okBtn.onclick = () => cleanup(true);
+      cancelBtn.onclick = () => cleanup(false);
+      modal.open('app-confirm-modal');
+    });
+  };
+
     modal.bind();
     cart.updateBadge();
     document.addEventListener('click', async (event) => {
@@ -269,6 +328,6 @@ const App = (() => {
     return `<div class=\"share-actions\"><button type=\"button\" class=\"btn btn--outline btn--sm\" data-copy-link=\"${render.escape(absolute)}\"><i class=\"fa-solid fa-copy\"></i> Copy link</button><a class=\"btn btn--ghost btn--sm\" target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://wa.me/?text=${text}%20${link}\" aria-label=\"Share on WhatsApp\"><i class=\"fa-brands fa-whatsapp\"></i></a><a class=\"btn btn--ghost btn--sm\" target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://www.facebook.com/sharer/sharer.php?u=${link}\" aria-label=\"Share on Facebook\"><i class=\"fa-brands fa-facebook\"></i></a></div>`;
   }
 
-  return { api, notify, modal, form, render, naira, i18n, cart, auth, injectChrome, shareButtons };
+  return { api, notify, modal, form, render, naira, i18n, cart, auth, injectChrome, shareButtons, prefillForm };
 })();
 window.App = App;

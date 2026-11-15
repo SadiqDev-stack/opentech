@@ -6,6 +6,8 @@ const productSchema = new mongoose.Schema({
   image: { type: String, required: true },
   stock: { type: Number, default: 0 },
   slug: { type: String, unique: true },
-  archived: { type: Boolean, default: false }
+  archived: { type: Boolean, default: false },
+  purchaseCount: { type: Number, default: 0 },
+  rating: { type: Number, default: 5 }
 }, { timestamps: true });
 export default mongoose.model('Product', productSchema, 'opentech_products');
